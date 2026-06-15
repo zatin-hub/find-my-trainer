@@ -13,8 +13,7 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const input =
-    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
+  const input = "input";
 
   async function start(e: React.FormEvent) {
     e.preventDefault();
@@ -53,19 +52,16 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
 
   if (step === "idle")
     return (
-      <button
-        onClick={() => setStep("contact")}
-        className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-emerald-500 hover:text-emerald-700"
-      >
+      <button onClick={() => setStep("contact")} className="btn-outline">
         Is this you? Claim profile
       </button>
     );
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="card p-4">
       {step === "contact" && (
         <form onSubmit={start} className="space-y-2">
-          <p className="text-sm font-medium">Verify it&apos;s you</p>
+          <p className="text-sm font-medium text-slate-200">Verify it&apos;s you</p>
           <p className="text-xs text-slate-500">
             We&apos;ll send a one-time code to confirm ownership.
           </p>
@@ -73,7 +69,7 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
+              className="input w-auto"
             >
               <option value="email">Email</option>
               <option value="phone">Phone</option>
@@ -85,18 +81,18 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
               className={input}
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-rose-400">{error}</p>}
           <div className="flex gap-2">
             <button
               disabled={busy}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+              className="btn-primary px-3 py-1.5"
             >
               {busy ? "Sending…" : "Send code"}
             </button>
             <button
               type="button"
               onClick={() => setStep("idle")}
-              className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              className="btn-ghost px-3 py-1.5"
             >
               Cancel
             </button>
@@ -106,9 +102,11 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
 
       {step === "otp" && (
         <form onSubmit={verify} className="space-y-2">
-          <p className="text-sm font-medium">Enter the 6-digit code</p>
+          <p className="text-sm font-medium text-slate-200">
+            Enter the 6-digit code
+          </p>
           {devOtp && (
-            <p className="rounded bg-amber-50 px-2 py-1 text-xs text-amber-800">
+            <p className="rounded border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-xs text-amber-200">
               Dev mode (no email configured): your code is{" "}
               <strong>{devOtp}</strong>
             </p>
@@ -121,18 +119,18 @@ export default function ClaimFlow({ trainerSlug }: { trainerSlug: string }) {
             placeholder="123456"
             className={input}
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-rose-400">{error}</p>}
           <div className="flex gap-2">
             <button
               disabled={busy}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+              className="btn-primary px-3 py-1.5"
             >
               {busy ? "Verifying…" : "Verify & claim"}
             </button>
             <button
               type="button"
               onClick={() => setStep("idle")}
-              className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              className="btn-ghost px-3 py-1.5"
             >
               Cancel
             </button>

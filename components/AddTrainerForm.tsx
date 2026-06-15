@@ -58,9 +58,8 @@ export default function AddTrainerForm({
     };
   }, [name, area]);
 
-  const input =
-    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
-  const label = "mb-1 block text-sm font-medium text-slate-700";
+  const input = "input";
+  const label = "mb-1 block text-sm font-medium text-slate-300";
 
   function toggle(list: string[], set: (v: string[]) => void, v: string) {
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -101,7 +100,7 @@ export default function AddTrainerForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+    <form onSubmit={submit} className="card space-y-4 p-6">
       {/* Honeypot: hidden from humans, catches bots */}
       <input
         type="text"
@@ -159,10 +158,10 @@ export default function AddTrainerForm({
               type="button"
               key={a.id}
               onClick={() => toggle(selActivities, setSelActivities, a.slug)}
-              className={`rounded-full border px-3 py-1 text-sm ${
+              className={`rounded-full border px-3 py-1 text-sm transition ${
                 selActivities.includes(a.slug)
-                  ? "border-emerald-600 bg-emerald-600 text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                  ? "border-emerald-400 bg-emerald-500 text-slate-950"
+                  : "border-white/15 bg-white/5 text-slate-300 hover:border-white/30"
               }`}
             >
               {a.icon} {a.name}
@@ -203,10 +202,10 @@ export default function AddTrainerForm({
               type="button"
               key={v}
               onClick={() => toggle(modes, setModes, v)}
-              className={`rounded-full border px-3 py-1 text-sm ${
+              className={`rounded-full border px-3 py-1 text-sm transition ${
                 modes.includes(v)
-                  ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                  : "border-slate-300 bg-white text-slate-700"
+                  ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
+                  : "border-white/15 bg-white/5 text-slate-300 hover:border-white/30"
               }`}
             >
               {lbl}
@@ -238,14 +237,14 @@ export default function AddTrainerForm({
         <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={2} className={input} />
       </div>
 
-      <div className="rounded-xl bg-slate-50 p-4">
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
         <label className={label}>Your recommendation (optional but encouraged)</label>
         <div className="mb-2 flex items-center gap-2">
-          <span className="text-sm text-slate-600">Rating</span>
+          <span className="text-sm text-slate-400">Rating</span>
           <select
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
-            className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+            className="input w-auto px-2 py-1"
           >
             {[5, 4, 3, 2, 1].map((r) => (
               <option key={r} value={r}>
@@ -263,15 +262,12 @@ export default function AddTrainerForm({
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      <button
-        disabled={busy}
-        className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-      >
+      <button disabled={busy} className="btn-primary w-full py-3">
         {busy ? "Submitting…" : "Add trainer"}
       </button>
-      <p className="text-center text-xs text-slate-400">
+      <p className="text-center text-xs text-slate-500">
         Anonymous · No account · We never sell your data.
       </p>
     </form>

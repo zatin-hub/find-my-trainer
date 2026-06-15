@@ -46,33 +46,31 @@ export default async function TrainerPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
-      <Link href="/" className="text-sm text-emerald-700 hover:underline">
+      <Link href="/" className="text-sm text-emerald-400 hover:underline">
         ← Back to map
       </Link>
 
-      <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="card mt-3 p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{trainer.name}</h1>
+              <h1 className="text-2xl font-bold text-white">{trainer.name}</h1>
               {trainer.verified && (
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                  ✓ Verified
-                </span>
+                <span className="chip-accent">✓ Verified</span>
               )}
             </div>
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 text-slate-400">
               {trainer.area_name} ·{" "}
               {trainer.activities.map((a) => `${a.icon} ${a.name}`).join(" · ")}
             </p>
           </div>
           <div className="text-right">
             {trainer.avg_rating ? (
-              <div className="text-lg text-amber-500">
+              <div className="text-lg text-amber-400">
                 {ratingStars(trainer.avg_rating)}
               </div>
             ) : (
-              <div className="text-slate-400">No rating yet</div>
+              <div className="text-slate-500">No rating yet</div>
             )}
             <div className="text-sm text-slate-500">
               {trainer.rec_count} recommendation
@@ -81,76 +79,70 @@ export default async function TrainerPage({
           </div>
         </div>
 
-        {trainer.bio && <p className="mt-4 text-slate-700">{trainer.bio}</p>}
+        {trainer.bio && <p className="mt-4 text-slate-300">{trainer.bio}</p>}
 
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+          <span className="chip">
             {formatPrice(trainer.price_min, trainer.price_max, trainer.price_unit)}
           </span>
           {trainer.modes.map((m) => (
-            <span
-              key={m}
-              className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700"
-            >
+            <span key={m} className="chip-accent">
               {m.replace("_", " ")}
             </span>
           ))}
           {trainer.languages.map((l) => (
-            <span
-              key={l}
-              className="rounded-full bg-slate-100 px-3 py-1 text-slate-600"
-            >
+            <span key={l} className="chip">
               {l}
             </span>
           ))}
         </div>
 
         {avgPaid && (
-          <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
             💸 Real average paid by people here:{" "}
             <strong>₹{avgPaid.toLocaleString("en-IN")}</strong>{" "}
-            <span className="text-amber-700">
+            <span className="text-amber-300/80">
               (from {prices.length} recommendation{prices.length === 1 ? "" : "s"})
             </span>
           </div>
         )}
 
         {trainer.contact_instagram && (
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="mt-4 text-sm text-slate-400">
             Instagram:{" "}
             <a
               href={`https://instagram.com/${trainer.contact_instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-700 hover:underline"
+              className="text-emerald-400 hover:underline"
             >
               @{trainer.contact_instagram}
             </a>
           </p>
         )}
         {trainer.claimed && trainer.contact_phone && (
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-400">
             Phone:{" "}
             <a
               href={`tel:${trainer.contact_phone}`}
-              className="text-emerald-700 hover:underline"
+              className="text-emerald-400 hover:underline"
             >
               {trainer.contact_phone}
             </a>
           </p>
         )}
         {!trainer.claimed && (
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500">
             Phone numbers are shown only after a trainer claims and consents — we
             never publish private contact details or sell your data.
           </p>
         )}
 
         {/* Ownership controls */}
-        <div className="mt-4 border-t border-slate-100 pt-4">
+        <div className="mt-4 border-t border-white/10 pt-4">
           {owner ? (
             <div>
-              <p className="mb-2 text-sm font-medium text-emerald-700">
+              <p className="mb-2 text-sm font-medium text-emerald-400">
                 ✓ You manage this profile
               </p>
               <EditProfile trainer={trainer} />

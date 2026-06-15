@@ -19,8 +19,7 @@ export default function SeekerPinForm({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const input =
-    "rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
+  const input = "input";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,9 +43,9 @@ export default function SeekerPinForm({
 
   if (done)
     return (
-      <p className="text-sm text-emerald-700">
+      <p className="text-sm text-emerald-300">
         ✓ Got it. We&apos;ll email you when a matching trainer is added nearby.
-        (Email sending is stubbed in local dev — your pin was saved.)
+        (Email is logged in local dev — your pin was saved.)
       </p>
     );
 
@@ -94,13 +93,10 @@ export default function SeekerPinForm({
         className={input}
       />
       <div className="sm:col-span-2">
-        <button
-          disabled={busy}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-        >
+        <button disabled={busy} className="btn-primary">
           {busy ? "Saving…" : "Notify me"}
         </button>
-        {error && <span className="ml-3 text-sm text-red-600">{error}</span>}
+        {error && <span className="ml-3 text-sm text-rose-400">{error}</span>}
       </div>
     </form>
   );

@@ -7,8 +7,9 @@ import type { Trainer } from "@/lib/types";
 
 const BENGALURU: [number, number] = [77.5946, 12.9716];
 
-// Free vector tiles, no API key. Falls back to MapLibre demo tiles if offline.
-const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+// Free vector tiles, no API key. Dark style to match the theme; falls back to
+// MapLibre demo tiles if offline.
+const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 const FALLBACK_STYLE = "https://demotiles.maplibre.org/style.json";
 
 export default function MapView({
@@ -71,7 +72,11 @@ export default function MapView({
       el.style.height = "30px";
       el.style.cursor = "pointer";
       el.style.background =
-        t.slug === selectedSlug ? "#dc2626" : "#059669";
+        t.slug === selectedSlug ? "#f43f5e" : "#10b981";
+      el.style.boxShadow =
+        t.slug === selectedSlug
+          ? "0 0 0 4px rgba(244,63,94,0.25)"
+          : "0 0 0 3px rgba(16,185,129,0.2)";
       el.style.fontSize = "14px";
       el.textContent = t.activities[0]?.icon ?? "📍";
       el.title = t.name;

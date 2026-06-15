@@ -12,15 +12,15 @@ import type {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    approved: "bg-emerald-50 text-emerald-700",
-    pending: "bg-amber-50 text-amber-700",
-    rejected: "bg-red-50 text-red-700",
-    merged: "bg-slate-200 text-slate-600",
-    open: "bg-amber-50 text-amber-700",
-    resolved: "bg-slate-100 text-slate-500",
+    approved: "bg-emerald-400/10 text-emerald-300 border border-emerald-400/20",
+    pending: "bg-amber-400/10 text-amber-300 border border-amber-400/20",
+    rejected: "bg-rose-500/10 text-rose-300 border border-rose-400/20",
+    merged: "bg-white/10 text-slate-400 border border-white/10",
+    open: "bg-amber-400/10 text-amber-300 border border-amber-400/20",
+    resolved: "bg-white/5 text-slate-500 border border-white/10",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs ${map[status] ?? "bg-slate-100"}`}>
+    <span className={`rounded-full px-2 py-0.5 text-xs ${map[status] ?? "bg-white/10"}`}>
       {status}
     </span>
   );
@@ -66,8 +66,8 @@ export default function AdminDashboard({
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Moderation</h1>
-        <Link href="/" className="text-sm text-emerald-700 hover:underline">
+        <h1 className="text-2xl font-bold text-white">Moderation</h1>
+        <Link href="/" className="text-sm text-emerald-400 hover:underline">
           ← Site
         </Link>
       </div>
@@ -84,16 +84,16 @@ export default function AdminDashboard({
             {reports.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50/40 p-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.07] p-3 text-sm"
               >
-                <div>
-                  <span className="font-medium">{r.target_type}</span>
+                <div className="text-slate-300">
+                  <span className="font-medium text-slate-100">{r.target_type}</span>
                   {r.reason ? ` · ${r.reason}` : ""} — {r.preview}
                 </div>
                 <button
                   onClick={() => act("resolve_report", r.id)}
                   disabled={busy}
-                  className={`${btn} bg-slate-900 text-white`}
+                  className={`${btn} bg-white/10 text-slate-200 hover:bg-white/20`}
                 >
                   Resolve
                 </button>
@@ -118,13 +118,13 @@ export default function AdminDashboard({
             {notifications.map((n) => (
               <li
                 key={n.id}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2"
+                className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2"
               >
-                <span>
+                <span className="text-slate-300">
                   <span className="text-slate-500">{n.email}</span> →{" "}
                   <Link
                     href={`/trainer/${n.trainer_slug}`}
-                    className="font-medium hover:text-emerald-700"
+                    className="font-medium hover:text-emerald-300"
                   >
                     {n.trainer_name}
                   </Link>
@@ -145,19 +145,19 @@ export default function AdminDashboard({
           {recs.map((r) => (
             <li
               key={r.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/trainer/${r.trainer_slug}`}
-                    className="font-medium hover:text-emerald-700"
+                    className="font-medium text-slate-100 hover:text-emerald-300"
                   >
                     {r.trainer_name}
                   </Link>
                   {statusBadge(r.status)}
                 </div>
-                <p className="truncate text-slate-600">{r.body}</p>
+                <p className="truncate text-slate-400">{r.body}</p>
               </div>
               <div className="flex shrink-0 gap-1">
                 {r.status !== "approved" && (
@@ -193,17 +193,17 @@ export default function AdminDashboard({
           {trainers.map((t) => (
             <li
               key={t.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm"
             >
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-slate-400">#{t.id}</span>
                 <Link
                   href={`/trainer/${t.slug}`}
-                  className="font-medium hover:text-emerald-700"
+                  className="font-medium text-slate-100 hover:text-emerald-300"
                 >
                   {t.name}
                 </Link>
-                <span className="text-slate-400">{t.area_name}</span>
+                <span className="text-slate-500">{t.area_name}</span>
                 {statusBadge(t.status)}
                 <span className="text-xs text-slate-400">{t.rec_count} recs</span>
               </div>
@@ -212,7 +212,7 @@ export default function AdminDashboard({
                   <button
                     onClick={() => mergeTrainer(t.id, t.name)}
                     disabled={busy}
-                    className={`${btn} bg-slate-200 text-slate-700`}
+                    className={`${btn} bg-white/10 text-slate-200 hover:bg-white/20`}
                   >
                     Merge…
                   </button>

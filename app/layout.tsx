@@ -13,39 +13,33 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <body className="min-h-screen text-slate-200 antialiased">
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07070b]/80 backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
             <Link href="/" className="flex items-center gap-2 font-bold">
               <span className="text-xl">📍</span>
-              <span className="text-lg tracking-tight">
-                find<span className="text-emerald-600">my</span>trainer
+              <span className="text-lg tracking-tight text-white">
+                find<span className="text-emerald-400">my</span>trainer
               </span>
-              <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+              <span className="ml-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-slate-400">
                 Bengaluru
               </span>
             </Link>
             <nav className="flex items-center gap-2 text-sm font-medium">
-              <Link
-                href="/activities"
-                className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100"
-              >
+              <Link href="/activities" className="btn-ghost">
                 Browse
               </Link>
-              <Link
-                href="/add"
-                className="rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
-              >
+              <Link href="/add" className="btn-primary">
                 + Recommend a trainer
               </Link>
             </nav>
           </div>
         </header>
         <main>{children}</main>
-        <footer className="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+        <footer className="mt-12 border-t border-white/10 py-8 text-center text-xs text-slate-500">
           <p>
-            Free & crowdsourced. We never sell your data or your number. Sample
-            data shown for local development.
+            Free &amp; crowdsourced. We never sell your data or your number.
+            Sample data shown for local development.
           </p>
         </footer>
       </body>

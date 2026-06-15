@@ -5,9 +5,9 @@ import type { Recommendation } from "@/lib/types";
 
 function Stars({ n }: { n: number }) {
   return (
-    <span className="text-amber-500">
+    <span className="text-amber-400">
       {"★".repeat(n)}
-      <span className="text-slate-300">{"★".repeat(Math.max(0, 5 - n))}</span>
+      <span className="text-slate-600">{"★".repeat(Math.max(0, 5 - n))}</span>
     </span>
   );
 }
@@ -74,14 +74,14 @@ function RecCard({
   }
 
   return (
-    <li className="rounded-xl border border-slate-200 bg-white p-4">
+    <li className="card p-4">
       <div className="flex items-center justify-between">
         <Stars n={rec.rating ?? 0} />
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-slate-500">
           {rec.trained_duration ? `Trained ${rec.trained_duration}` : ""}
         </span>
       </div>
-      <p className="mt-2 text-slate-700">{rec.body}</p>
+      <p className="mt-2 text-slate-300">{rec.body}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
         {rec.price_paid && (
           <span>
@@ -94,8 +94,8 @@ function RecCard({
           disabled={busy}
           className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 transition ${
             voted
-              ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-              : "border-slate-300 text-slate-600 hover:border-slate-400"
+              ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+              : "border-white/15 text-slate-400 hover:border-white/30"
           }`}
         >
           👍 Helpful · {count}
@@ -103,7 +103,7 @@ function RecCard({
         <button
           onClick={report}
           disabled={reported}
-          className="text-slate-400 hover:text-red-600 disabled:text-slate-300"
+          className="text-slate-500 hover:text-rose-400 disabled:text-slate-600"
         >
           {reported ? "Reported" : "Report"}
         </button>
@@ -111,15 +111,15 @@ function RecCard({
 
       {/* Owner reply, visible to everyone */}
       {savedReply && !editingReply && (
-        <div className="mt-3 rounded-lg border-l-2 border-emerald-500 bg-emerald-50/60 p-3 text-sm">
-          <div className="mb-0.5 text-xs font-medium text-emerald-700">
+        <div className="mt-3 rounded-lg border-l-2 border-emerald-400/60 bg-emerald-400/[0.07] p-3 text-sm">
+          <div className="mb-0.5 text-xs font-medium text-emerald-300">
             Reply from trainer
           </div>
-          <p className="text-slate-700">{savedReply}</p>
+          <p className="text-slate-300">{savedReply}</p>
           {isOwner && (
             <button
               onClick={() => setEditingReply(true)}
-              className="mt-1 text-xs text-emerald-700 hover:underline"
+              className="mt-1 text-xs text-emerald-400 hover:underline"
             >
               Edit reply
             </button>
@@ -132,7 +132,7 @@ function RecCard({
           {!editingReply && !savedReply ? (
             <button
               onClick={() => setEditingReply(true)}
-              className="text-xs font-medium text-emerald-700 hover:underline"
+              className="text-xs font-medium text-emerald-400 hover:underline"
             >
               + Reply as the trainer
             </button>
@@ -143,13 +143,13 @@ function RecCard({
                 onChange={(e) => setReply(e.target.value)}
                 rows={2}
                 placeholder="Respond professionally — thank them or add context."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="input"
               />
               <div className="flex gap-2">
                 <button
                   onClick={saveReply}
                   disabled={busy}
-                  className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+                  className="rounded-md bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 disabled:opacity-50"
                 >
                   Save reply
                 </button>
@@ -158,7 +158,7 @@ function RecCard({
                     setReply(savedReply);
                     setEditingReply(false);
                   }}
-                  className="rounded-md px-3 py-1 text-xs text-slate-600 hover:bg-slate-100"
+                  className="rounded-md px-3 py-1 text-xs text-slate-400 hover:bg-white/5"
                 >
                   Cancel
                 </button>
@@ -185,7 +185,7 @@ export default function RecommendationList({
   const votedSet = new Set(votedIds);
   if (recs.length === 0)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+      <p className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
         No recommendations yet. Be the first.
       </p>
     );
