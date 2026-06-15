@@ -269,6 +269,28 @@ export function adminListRecommendations(): AdminRecRow[] {
     .all() as AdminRecRow[];
 }
 
+export interface AdminNotification {
+  id: number;
+  email: string;
+  trainer_name: string;
+  trainer_slug: string;
+  sent: number;
+  created_at: string;
+}
+
+export function adminListNotifications(): AdminNotification[] {
+  return getDb()
+    .prepare(
+      `SELECT n.id, sp.email, t.name AS trainer_name, t.slug AS trainer_slug,
+              n.sent, n.created_at
+       FROM notifications n
+       JOIN seeker_pins sp ON sp.id = n.seeker_pin_id
+       JOIN trainers t ON t.id = n.trainer_id
+       ORDER BY n.created_at DESC LIMIT 50`
+    )
+    .all() as AdminNotification[];
+}
+
 /** Which of the given recommendation ids has this anon visitor voted on. */
 export function getVotedRecIds(
   anonId: string | undefined,

@@ -1,4 +1,5 @@
 import {
+  adminListNotifications,
   adminListRecommendations,
   adminListReports,
   adminListTrainers,
@@ -30,6 +31,7 @@ export default async function AdminPage() {
       reports={adminListReports()}
       trainers={adminListTrainers()}
       recs={adminListRecommendations()}
+      notifications={adminListNotifications()}
     />
   );
 }

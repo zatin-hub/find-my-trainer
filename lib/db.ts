@@ -117,6 +117,16 @@ function init(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      seeker_pin_id INTEGER NOT NULL REFERENCES seeker_pins(id) ON DELETE CASCADE,
+      trainer_id INTEGER NOT NULL REFERENCES trainers(id) ON DELETE CASCADE,
+      channel TEXT NOT NULL DEFAULT 'email',
+      sent INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE (seeker_pin_id, trainer_id)
+    );
+
     CREATE TABLE IF NOT EXISTS claims (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       trainer_id INTEGER NOT NULL REFERENCES trainers(id) ON DELETE CASCADE,

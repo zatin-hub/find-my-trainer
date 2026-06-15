@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
+  AdminNotification,
   AdminRecRow,
   AdminReport,
   AdminTrainerRow,
@@ -28,10 +29,12 @@ export default function AdminDashboard({
   reports,
   trainers,
   recs,
+  notifications,
 }: {
   reports: AdminReport[];
   trainers: AdminTrainerRow[];
   recs: AdminRecRow[];
+  notifications: AdminNotification[];
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -84,6 +87,39 @@ export default function AdminDashboard({
                 >
                   Resolve
                 </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Seeker-pin alerts */}
+      <section className="mt-8">
+        <h2 className="mb-2 text-lg font-semibold">
+          Seeker-pin alerts ({notifications.length})
+        </h2>
+        {notifications.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No alerts sent yet. They fire when a new trainer matches a saved
+            search.
+          </p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {notifications.map((n) => (
+              <li
+                key={n.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2"
+              >
+                <span>
+                  <span className="text-slate-500">{n.email}</span> →{" "}
+                  <Link
+                    href={`/trainer/${n.trainer_slug}`}
+                    className="font-medium hover:text-emerald-700"
+                  >
+                    {n.trainer_name}
+                  </Link>
+                </span>
+                {statusBadge(n.sent ? "resolved" : "pending")}
               </li>
             ))}
           </ul>

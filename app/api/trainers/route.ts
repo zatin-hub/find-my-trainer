@@ -4,6 +4,7 @@ import { getDb, slugify } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
+import { notifyMatchingSeekers } from "@/lib/match";
 
 export const dynamic = "force-dynamic";
 
@@ -138,6 +139,13 @@ export async function POST(req: NextRequest) {
       body.price_unit ? String(body.price_unit) : null,
       body.trained_duration ? String(body.trained_duration) : null
     );
+  }
+
+  // Fire seeker-pin alerts for anyone whose saved search this trainer matches.
+  try {
+    await notifyMatchingSeekers(trainerId);
+  } catch (e) {
+    console.error("[match] notify failed", e);
   }
 
   const res = NextResponse.json({ ok: true, slug });
