@@ -24,6 +24,7 @@ export default function AddTrainerForm({
   const [bio, setBio] = useState("");
   const [recommendation, setRecommendation] = useState("");
   const [rating, setRating] = useState(5);
+  const [hp, setHp] = useState(""); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -60,6 +61,7 @@ export default function AddTrainerForm({
         recommendation: recommendation || undefined,
         rating: recommendation ? rating : undefined,
         price_unit_rec: priceUnit,
+        website: hp || undefined,
       }),
     });
     setBusy(false);
@@ -70,6 +72,17 @@ export default function AddTrainerForm({
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+      {/* Honeypot: hidden from humans, catches bots */}
+      <input
+        type="text"
+        name="website"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
       <div>
         <label className={label}>Trainer name *</label>
         <input required value={name} onChange={(e) => setName(e.target.value)} className={input} />

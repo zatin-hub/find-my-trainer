@@ -3,6 +3,7 @@ import { listTrainers } from "@/lib/queries";
 import { getDb, slugify } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +23,23 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const db = getDb();
+
+  const rl = rateLimit(`trainers:${clientIp(req)}`, 5, 60_000);
+  if (!rl.ok)
+    return NextResponse.json(
+      { error: "Too many submissions. Please slow down." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
+    );
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  // Honeypot: real users never fill this hidden field; bots do.
+  if (body.website) return NextResponse.json({ ok: true, slug: "" });
 
   const name = String(body.name || "").trim();
   const areaSlug = String(body.area || "").trim();

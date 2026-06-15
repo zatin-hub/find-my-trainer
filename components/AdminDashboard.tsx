@@ -1,0 +1,189 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type {
+  AdminRecRow,
+  AdminReport,
+  AdminTrainerRow,
+} from "@/lib/queries";
+
+function statusBadge(status: string) {
+  const map: Record<string, string> = {
+    approved: "bg-emerald-50 text-emerald-700",
+    pending: "bg-amber-50 text-amber-700",
+    rejected: "bg-red-50 text-red-700",
+    open: "bg-amber-50 text-amber-700",
+    resolved: "bg-slate-100 text-slate-500",
+  };
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${map[status] ?? "bg-slate-100"}`}>
+      {status}
+    </span>
+  );
+}
+
+export default function AdminDashboard({
+  reports,
+  trainers,
+  recs,
+}: {
+  reports: AdminReport[];
+  trainers: AdminTrainerRow[];
+  recs: AdminRecRow[];
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  async function act(action: string, id: number) {
+    setBusy(true);
+    await fetch("/api/admin/moderate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, id }),
+    });
+    setBusy(false);
+    router.refresh();
+  }
+
+  const btn =
+    "rounded-md px-2 py-1 text-xs font-medium disabled:opacity-50";
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Moderation</h1>
+        <Link href="/" className="text-sm text-emerald-700 hover:underline">
+          ← Site
+        </Link>
+      </div>
+
+      {/* Reports */}
+      <section className="mt-6">
+        <h2 className="mb-2 text-lg font-semibold">
+          Open reports ({reports.length})
+        </h2>
+        {reports.length === 0 ? (
+          <p className="text-sm text-slate-500">Nothing flagged. 🎉</p>
+        ) : (
+          <ul className="space-y-2">
+            {reports.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50/40 p-3 text-sm"
+              >
+                <div>
+                  <span className="font-medium">{r.target_type}</span>
+                  {r.reason ? ` · ${r.reason}` : ""} — {r.preview}
+                </div>
+                <button
+                  onClick={() => act("resolve_report", r.id)}
+                  disabled={busy}
+                  className={`${btn} bg-slate-900 text-white`}
+                >
+                  Resolve
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Recommendations */}
+      <section className="mt-8">
+        <h2 className="mb-2 text-lg font-semibold">
+          Recommendations ({recs.length})
+        </h2>
+        <ul className="space-y-2">
+          {recs.map((r) => (
+            <li
+              key={r.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/trainer/${r.trainer_slug}`}
+                    className="font-medium hover:text-emerald-700"
+                  >
+                    {r.trainer_name}
+                  </Link>
+                  {statusBadge(r.status)}
+                </div>
+                <p className="truncate text-slate-600">{r.body}</p>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                {r.status !== "approved" && (
+                  <button
+                    onClick={() => act("approve_rec", r.id)}
+                    disabled={busy}
+                    className={`${btn} bg-emerald-600 text-white`}
+                  >
+                    Approve
+                  </button>
+                )}
+                {r.status !== "rejected" && (
+                  <button
+                    onClick={() => act("hide_rec", r.id)}
+                    disabled={busy}
+                    className={`${btn} bg-red-600 text-white`}
+                  >
+                    Hide
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Trainers */}
+      <section className="mt-8">
+        <h2 className="mb-2 text-lg font-semibold">
+          Trainers ({trainers.length})
+        </h2>
+        <ul className="space-y-2">
+          {trainers.map((t) => (
+            <li
+              key={t.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+            >
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/trainer/${t.slug}`}
+                  className="font-medium hover:text-emerald-700"
+                >
+                  {t.name}
+                </Link>
+                <span className="text-slate-400">{t.area_name}</span>
+                {statusBadge(t.status)}
+                <span className="text-xs text-slate-400">{t.rec_count} recs</span>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                {t.status !== "approved" && (
+                  <button
+                    onClick={() => act("approve_trainer", t.id)}
+                    disabled={busy}
+                    className={`${btn} bg-emerald-600 text-white`}
+                  >
+                    Approve
+                  </button>
+                )}
+                {t.status !== "rejected" && (
+                  <button
+                    onClick={() => act("hide_trainer", t.id)}
+                    disabled={busy}
+                    className={`${btn} bg-red-600 text-white`}
+                  >
+                    Hide
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}

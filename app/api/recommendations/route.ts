@@ -2,15 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
   const db = getDb();
+
+  const rl = rateLimit(`recs:${clientIp(req)}`, 8, 60_000);
+  if (!rl.ok)
+    return NextResponse.json(
+      { error: "Too many submissions. Please slow down." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } }
+    );
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  if (body.website) return NextResponse.json({ ok: true });
 
   const trainerSlug = String(body.trainer || "").trim();
   const text = String(body.body || "").trim();

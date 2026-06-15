@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getAnonId, setAnonCookie } from "@/lib/anon";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 const VALID_TARGETS = new Set(["trainer", "recommendation"]);
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`reports:${clientIp(req)}`, 10, 60_000);
+  if (!rl.ok)
+    return NextResponse.json(
+      { error: "Too many reports. Please slow down." },
+      { status: 429 }
+    );
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

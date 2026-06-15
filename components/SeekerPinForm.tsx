@@ -14,6 +14,7 @@ export default function SeekerPinForm({
   const [activity, setActivity] = useState("");
   const [area, setArea] = useState("");
   const [budget, setBudget] = useState("");
+  const [hp, setHp] = useState(""); // honeypot
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,6 +34,7 @@ export default function SeekerPinForm({
         activity: activity || undefined,
         area: area || undefined,
         budget_max: budget ? Number(budget) : undefined,
+        website: hp || undefined,
       }),
     });
     setBusy(false);
@@ -50,6 +52,16 @@ export default function SeekerPinForm({
 
   return (
     <form onSubmit={submit} className="grid gap-2 sm:grid-cols-2">
+      <input
+        type="text"
+        name="website"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
       <input
         type="email"
         required

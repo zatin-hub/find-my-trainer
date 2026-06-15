@@ -26,6 +26,13 @@ a map, for free. **We never sell your data or your number.**
 - 🔔 **Seeker pins** — leave an email + what you're looking for; in production a
   cron job emails you when a match appears nearby (stubbed locally — pins are
   saved).
+- 👍 **Helpful voting** & 🚩 **reporting** on recommendations (anonymous,
+  deduped per visitor).
+- 🧭 **Browse / SEO pages** — `/activities`, `/activities/[activity]`,
+  `/activities/[activity]/[area]`, plus `sitemap.xml` and `robots.txt`.
+- 🛡️ **Trust & safety** — per-IP rate limiting, honeypot fields, and an
+  **admin moderation dashboard** at `/admin` (local key: `letmein`, override with
+  `ADMIN_KEY`) to action reports and hide/approve trainers & recommendations.
 
 ## Tech
 
@@ -66,6 +73,10 @@ PLAN.md              # full research + product + build plan
 
 ## Roadmap
 
-Next up (see `PLAN.md`): moderation queue + anti-abuse (Turnstile, rate limits),
-trainer "claim" flow, programmatic SEO pages (`/[activity]/[area]`), real email
-alerts, and migration to Postgres/PostGIS for production.
+Done so far: map browse + filters, trainer profiles, anonymous add/recommend,
+seeker pins, voting/reporting, programmatic SEO pages, rate limiting + honeypot,
+and an admin moderation dashboard.
+
+Next up (see `PLAN.md`): trainer "claim" flow (OTP), Cloudflare Turnstile,
+real email alerts (Resend) with a matching cron, fuzzy duplicate-trainer merge,
+and migration to Postgres/PostGIS for production.

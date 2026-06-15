@@ -11,6 +11,7 @@ export default function RecommendForm({ trainerSlug }: { trainerSlug: string }) 
   const [pricePaid, setPricePaid] = useState("");
   const [priceUnit, setPriceUnit] = useState("per_month");
   const [duration, setDuration] = useState("");
+  const [hp, setHp] = useState(""); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,6 +32,7 @@ export default function RecommendForm({ trainerSlug }: { trainerSlug: string }) 
         price_paid: pricePaid ? Number(pricePaid) : undefined,
         price_unit: priceUnit,
         trained_duration: duration || undefined,
+        website: hp || undefined,
       }),
     });
     setBusy(false);
@@ -57,6 +59,16 @@ export default function RecommendForm({ trainerSlug }: { trainerSlug: string }) 
 
   return (
     <form onSubmit={submit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+      <input
+        type="text"
+        name="website"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium">Rating</label>
         <select

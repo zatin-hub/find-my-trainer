@@ -192,6 +192,81 @@ export function getRecommendations(trainerId: number): Recommendation[] {
     .all(trainerId) as Recommendation[];
 }
 
+// ---- Admin / moderation queries ----
+
+export interface AdminReport {
+  id: number;
+  target_type: string;
+  target_id: number;
+  reason: string | null;
+  status: string;
+  created_at: string;
+  preview: string | null;
+}
+
+export function adminListReports(): AdminReport[] {
+  const db = getDb();
+  const reports = db
+    .prepare("SELECT * FROM reports WHERE status = 'open' ORDER BY created_at DESC")
+    .all() as AdminReport[];
+  for (const r of reports) {
+    if (r.target_type === "recommendation") {
+      const rec = db
+        .prepare("SELECT body FROM recommendations WHERE id = ?")
+        .get(r.target_id) as { body: string } | undefined;
+      r.preview = rec?.body ?? "(deleted)";
+    } else if (r.target_type === "trainer") {
+      const t = db
+        .prepare("SELECT name FROM trainers WHERE id = ?")
+        .get(r.target_id) as { name: string } | undefined;
+      r.preview = t?.name ?? "(deleted)";
+    }
+  }
+  return reports;
+}
+
+export interface AdminTrainerRow {
+  id: number;
+  slug: string;
+  name: string;
+  area_name: string;
+  status: string;
+  rec_count: number;
+  created_at: string;
+}
+
+export function adminListTrainers(): AdminTrainerRow[] {
+  return getDb()
+    .prepare(
+      `SELECT t.id, t.slug, t.name, ar.name AS area_name, t.status, t.created_at,
+        (SELECT COUNT(*) FROM recommendations r WHERE r.trainer_id = t.id) AS rec_count
+       FROM trainers t JOIN areas ar ON ar.id = t.area_id
+       ORDER BY t.created_at DESC LIMIT 200`
+    )
+    .all() as AdminTrainerRow[];
+}
+
+export interface AdminRecRow {
+  id: number;
+  body: string;
+  status: string;
+  rating: number | null;
+  trainer_name: string;
+  trainer_slug: string;
+  created_at: string;
+}
+
+export function adminListRecommendations(): AdminRecRow[] {
+  return getDb()
+    .prepare(
+      `SELECT r.id, r.body, r.status, r.rating, r.created_at,
+        t.name AS trainer_name, t.slug AS trainer_slug
+       FROM recommendations r JOIN trainers t ON t.id = r.trainer_id
+       ORDER BY r.created_at DESC LIMIT 200`
+    )
+    .all() as AdminRecRow[];
+}
+
 /** Which of the given recommendation ids has this anon visitor voted on. */
 export function getVotedRecIds(
   anonId: string | undefined,
