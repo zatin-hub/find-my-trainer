@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { getRecommendations, getTrainerBySlug } from "@/lib/queries";
+import {
+  getRecommendations,
+  getTrainerBySlug,
+  getVotedRecIds,
+} from "@/lib/queries";
 import { formatPrice, ratingStars } from "@/lib/format";
 import RecommendForm from "@/components/RecommendForm";
+import RecommendationList from "@/components/RecommendationList";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +22,11 @@ export default async function TrainerPage({
   if (!trainer) notFound();
 
   const recs = getRecommendations(trainer.id);
+  const anonId = (await cookies()).get("anon_id")?.value;
+  const votedIds = getVotedRecIds(
+    anonId,
+    recs.map((r) => r.id)
+  );
   const prices = recs
     .filter((r) => r.price_paid)
     .map((r) => r.price_paid as number);
@@ -113,41 +124,7 @@ export default async function TrainerPage({
           <h2 className="text-lg font-semibold">What people say</h2>
           <RecommendForm trainerSlug={trainer.slug} />
         </div>
-        <ul className="space-y-3">
-          {recs.map((r) => (
-            <li
-              key={r.id}
-              className="rounded-xl border border-slate-200 bg-white p-4"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-amber-500">
-                  {"★".repeat(r.rating ?? 0)}
-                  <span className="text-slate-300">
-                    {"★".repeat(Math.max(0, 5 - (r.rating ?? 0)))}
-                  </span>
-                </span>
-                <span className="text-xs text-slate-400">
-                  {r.trained_duration ? `Trained ${r.trained_duration}` : ""}
-                </span>
-              </div>
-              <p className="mt-2 text-slate-700">{r.body}</p>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
-                {r.price_paid && (
-                  <span>
-                    Paid ₹{r.price_paid.toLocaleString("en-IN")}
-                    {r.price_unit === "per_session" ? "/session" : "/month"}
-                  </span>
-                )}
-                <span>👍 {r.helpful_count} found this helpful</span>
-              </div>
-            </li>
-          ))}
-          {recs.length === 0 && (
-            <li className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              No recommendations yet. Be the first.
-            </li>
-          )}
-        </ul>
+        <RecommendationList recs={recs} votedIds={votedIds} />
       </div>
     </div>
   );

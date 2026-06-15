@@ -27,6 +27,12 @@ export default function RootLayout({
             </Link>
             <nav className="flex items-center gap-2 text-sm font-medium">
               <Link
+                href="/activities"
+                className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100"
+              >
+                Browse
+              </Link>
+              <Link
                 href="/add"
                 className="rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
               >

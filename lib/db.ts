@@ -96,6 +96,23 @@ function init(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS rec_votes (
+      recommendation_id INTEGER NOT NULL REFERENCES recommendations(id) ON DELETE CASCADE,
+      anon_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (recommendation_id, anon_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      target_type TEXT NOT NULL,
+      target_id INTEGER NOT NULL,
+      reason TEXT,
+      anon_id TEXT,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_trainers_area ON trainers(area_id);
     CREATE INDEX IF NOT EXISTS idx_recs_trainer ON recommendations(trainer_id);
     CREATE INDEX IF NOT EXISTS idx_ta_activity ON trainer_activities(activity_id);

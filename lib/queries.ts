@@ -23,6 +23,22 @@ export function getAreas(): Area[] {
     .all() as Area[];
 }
 
+export function getActivityBySlug(slug: string): Activity | null {
+  return (
+    (getDb()
+      .prepare("SELECT id, slug, name, icon FROM activities WHERE slug = ?")
+      .get(slug) as Activity | undefined) ?? null
+  );
+}
+
+export function getAreaBySlug(slug: string): Area | null {
+  return (
+    (getDb()
+      .prepare("SELECT id, slug, name, lat, lng FROM areas WHERE slug = ?")
+      .get(slug) as Area | undefined) ?? null
+  );
+}
+
 interface TrainerRow {
   id: number;
   slug: string;
@@ -174,4 +190,20 @@ export function getRecommendations(trainerId: number): Recommendation[] {
        ORDER BY r.helpful_count DESC, r.created_at DESC`
     )
     .all(trainerId) as Recommendation[];
+}
+
+/** Which of the given recommendation ids has this anon visitor voted on. */
+export function getVotedRecIds(
+  anonId: string | undefined,
+  recIds: number[]
+): number[] {
+  if (!anonId || recIds.length === 0) return [];
+  const placeholders = recIds.map(() => "?").join(",");
+  const rows = getDb()
+    .prepare(
+      `SELECT recommendation_id FROM rec_votes
+       WHERE anon_id = ? AND recommendation_id IN (${placeholders})`
+    )
+    .all(anonId, ...recIds) as { recommendation_id: number }[];
+  return rows.map((r) => r.recommendation_id);
 }
