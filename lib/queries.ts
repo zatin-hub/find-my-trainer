@@ -23,6 +23,80 @@ export function getAreas(): Area[] {
     .all() as Area[];
 }
 
+export interface SimilarTrainer {
+  id: number;
+  slug: string;
+  name: string;
+  area_name: string;
+  score: number;
+}
+
+function normalizeTokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** Fuzzy-match existing trainers by name to avoid duplicate entries. */
+export function findSimilarTrainers(
+  name: string,
+  areaSlug?: string
+): SimilarTrainer[] {
+  const tokens = normalizeTokens(name);
+  if (tokens.length === 0) return [];
+  const tokenSet = new Set(tokens);
+  const norm = tokens.join(" ");
+
+  const rows = getDb()
+    .prepare(
+      `SELECT t.id, t.slug, t.name, ar.name AS area_name, ar.slug AS area_slug
+       FROM trainers t JOIN areas ar ON ar.id = t.area_id
+       WHERE t.status = 'approved'`
+    )
+    .all() as {
+    id: number;
+    slug: string;
+    name: string;
+    area_name: string;
+    area_slug: string;
+  }[];
+
+  const scored = rows
+    .map((r) => {
+      const rTokens = normalizeTokens(r.name);
+      const rSet = new Set(rTokens);
+      const inter = [...tokenSet].filter((t) => rSet.has(t)).length;
+      const union = new Set([...tokenSet, ...rSet]).size;
+      let score = union ? inter / union : 0; // Jaccard
+      const rNorm = rTokens.join(" ");
+      if (rNorm === norm) score = 1;
+      else if (rNorm.includes(norm) || norm.includes(rNorm))
+        score = Math.max(score, 0.7);
+      if (areaSlug && r.area_slug === areaSlug) score += 0.1; // same-area boost
+      return { id: r.id, slug: r.slug, name: r.name, area_name: r.area_name, score };
+    })
+    .filter((r) => r.score >= 0.45)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  return scored;
+}
+
+/** Canonical slug if a trainer was merged into another. */
+export function getMergedTargetSlug(slug: string): string | null {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT status, merged_into FROM trainers WHERE slug = ?")
+    .get(slug) as { status: string; merged_into: number | null } | undefined;
+  if (!row || row.status !== "merged" || !row.merged_into) return null;
+  const target = db
+    .prepare("SELECT slug FROM trainers WHERE id = ?")
+    .get(row.merged_into) as { slug: string } | undefined;
+  return target?.slug ?? null;
+}
+
 export function getActivityBySlug(slug: string): Activity | null {
   return (
     (getDb()

@@ -15,6 +15,7 @@ function statusBadge(status: string) {
     approved: "bg-emerald-50 text-emerald-700",
     pending: "bg-amber-50 text-amber-700",
     rejected: "bg-red-50 text-red-700",
+    merged: "bg-slate-200 text-slate-600",
     open: "bg-amber-50 text-amber-700",
     resolved: "bg-slate-100 text-slate-500",
   };
@@ -39,15 +40,24 @@ export default function AdminDashboard({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
-  async function act(action: string, id: number) {
+  async function act(action: string, id: number, extra?: Record<string, unknown>) {
     setBusy(true);
     await fetch("/api/admin/moderate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, id }),
+      body: JSON.stringify({ action, id, ...extra }),
     });
     setBusy(false);
     router.refresh();
+  }
+
+  function mergeTrainer(id: number, name: string) {
+    const into = window.prompt(
+      `Merge "${name}" INTO which trainer? Enter the target trainer's numeric id (its recommendations move to the target; this one is hidden).`
+    );
+    const intoId = Number(into);
+    if (!Number.isInteger(intoId) || intoId === id) return;
+    act("merge_trainer", id, { into_id: intoId });
   }
 
   const btn =
@@ -186,6 +196,7 @@ export default function AdminDashboard({
               className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
             >
               <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-slate-400">#{t.id}</span>
                 <Link
                   href={`/trainer/${t.slug}`}
                   className="font-medium hover:text-emerald-700"
@@ -197,6 +208,15 @@ export default function AdminDashboard({
                 <span className="text-xs text-slate-400">{t.rec_count} recs</span>
               </div>
               <div className="flex shrink-0 gap-1">
+                {t.status === "approved" && (
+                  <button
+                    onClick={() => mergeTrainer(t.id, t.name)}
+                    disabled={busy}
+                    className={`${btn} bg-slate-200 text-slate-700`}
+                  >
+                    Merge…
+                  </button>
+                )}
                 {t.status !== "approved" && (
                   <button
                     onClick={() => act("approve_trainer", t.id)}
@@ -206,7 +226,7 @@ export default function AdminDashboard({
                     Approve
                   </button>
                 )}
-                {t.status !== "rejected" && (
+                {t.status !== "rejected" && t.status !== "merged" && (
                   <button
                     onClick={() => act("hide_trainer", t.id)}
                     disabled={busy}

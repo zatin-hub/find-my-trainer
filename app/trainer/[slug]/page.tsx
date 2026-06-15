@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
+  getMergedTargetSlug,
   getRecommendations,
   getTrainerBySlug,
   getVotedRecIds,
@@ -21,6 +22,10 @@ export default async function TrainerPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  // If this trainer was merged into another, redirect to the canonical profile.
+  const mergedTarget = getMergedTargetSlug(slug);
+  if (mergedTarget) redirect(`/trainer/${mergedTarget}`);
+
   const trainer = getTrainerBySlug(slug);
   if (!trainer) notFound();
 

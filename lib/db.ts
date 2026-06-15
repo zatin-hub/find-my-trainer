@@ -62,6 +62,7 @@ function init(): Database.Database {
       claimed INTEGER NOT NULL DEFAULT 0,
       verified INTEGER NOT NULL DEFAULT 0,
       claim_token TEXT,
+      merged_into INTEGER,
       created_by_anon TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -154,6 +155,7 @@ function migrate(db: Database.Database) {
   const cols = [
     "ALTER TABLE trainers ADD COLUMN claim_token TEXT",
     "ALTER TABLE trainers ADD COLUMN contact_phone TEXT",
+    "ALTER TABLE trainers ADD COLUMN merged_into INTEGER",
     "ALTER TABLE recommendations ADD COLUMN reply TEXT",
     "ALTER TABLE recommendations ADD COLUMN replied_at TEXT",
   ];

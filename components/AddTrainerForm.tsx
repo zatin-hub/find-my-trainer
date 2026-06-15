@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Activity, Area } from "@/lib/types";
+
+interface SimilarMatch {
+  id: number;
+  slug: string;
+  name: string;
+  area_name: string;
+}
 
 export default function AddTrainerForm({
   activities,
@@ -27,6 +35,28 @@ export default function AddTrainerForm({
   const [hp, setHp] = useState(""); // honeypot
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [similar, setSimilar] = useState<SimilarMatch[]>([]);
+
+  // Suggest existing trainers as the user types, to avoid duplicates.
+  useEffect(() => {
+    if (name.trim().length < 2) {
+      setSimilar([]);
+      return;
+    }
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      const params = new URLSearchParams({ name });
+      if (area) params.set("area", area);
+      fetch(`/api/trainers/similar?${params.toString()}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((d) => setSimilar(d.matches ?? []))
+        .catch(() => {});
+    }, 300);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [name, area]);
 
   const input =
     "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
@@ -86,6 +116,27 @@ export default function AddTrainerForm({
       <div>
         <label className={label}>Trainer name *</label>
         <input required value={name} onChange={(e) => setName(e.target.value)} className={input} />
+        {similar.length > 0 && (
+          <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+            <p className="font-medium text-amber-800">
+              These may already exist — add your recommendation there instead of
+              creating a duplicate:
+            </p>
+            <ul className="mt-1 space-y-1">
+              {similar.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/trainer/${m.slug}`}
+                    className="text-emerald-700 hover:underline"
+                  >
+                    {m.name}
+                  </Link>{" "}
+                  <span className="text-slate-500">· {m.area_name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div>
