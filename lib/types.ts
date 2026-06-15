@@ -29,6 +29,7 @@ export interface Trainer {
   modes: Mode[];
   languages: string[];
   contact_instagram: string | null;
+  contact_phone: string | null;
   price_min: number | null;
   price_max: number | null;
   price_unit: PriceUnit | null;
@@ -54,6 +55,8 @@ export interface Recommendation {
   trained_duration: string | null;
   helpful_count: number;
   status: "pending" | "approved" | "rejected";
+  reply: string | null;
+  replied_at: string | null;
   created_at: string;
 }
 

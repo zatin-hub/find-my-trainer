@@ -52,6 +52,7 @@ interface TrainerRow {
   modes: string;
   languages: string;
   contact_instagram: string | null;
+  contact_phone: string | null;
   price_min: number | null;
   price_max: number | null;
   price_unit: string | null;
@@ -95,6 +96,7 @@ function rowToTrainer(row: TrainerRow): Trainer {
     modes: safeJsonArray(row.modes) as Trainer["modes"],
     languages: safeJsonArray(row.languages),
     contact_instagram: row.contact_instagram,
+    contact_phone: row.contact_phone,
     price_min: row.price_min,
     price_max: row.price_max,
     price_unit: row.price_unit as Trainer["price_unit"],

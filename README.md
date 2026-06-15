@@ -33,6 +33,10 @@ a map, for free. **We never sell your data or your number.**
 - 🛡️ **Trust & safety** — per-IP rate limiting, honeypot fields, and an
   **admin moderation dashboard** at `/admin` (local key: `letmein`, override with
   `ADMIN_KEY`) to action reports and hide/approve trainers & recommendations.
+- 🔑 **Trainer claim flow** — OTP-based ("Is this you? Claim profile"). Verified
+  owners get a ✓ badge, can **edit their profile**, add a **phone number** (only
+  shown once claimed/consented), and **reply** to recommendations. Locally the
+  OTP is returned in the response since no email/SMS is wired (`EXPOSE_DEV_OTP`).
 
 ## Tech
 
@@ -75,8 +79,8 @@ PLAN.md              # full research + product + build plan
 
 Done so far: map browse + filters, trainer profiles, anonymous add/recommend,
 seeker pins, voting/reporting, programmatic SEO pages, rate limiting + honeypot,
-and an admin moderation dashboard.
+admin moderation dashboard, and the OTP-based trainer claim/edit/reply flow.
 
-Next up (see `PLAN.md`): trainer "claim" flow (OTP), Cloudflare Turnstile,
-real email alerts (Resend) with a matching cron, fuzzy duplicate-trainer merge,
-and migration to Postgres/PostGIS for production.
+Next up (see `PLAN.md`): real OTP delivery (email/SMS) + Cloudflare Turnstile,
+email alerts (Resend) with a matching cron for seeker pins, fuzzy
+duplicate-trainer merge, and migration to Postgres/PostGIS for production.

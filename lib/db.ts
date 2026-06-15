@@ -54,12 +54,14 @@ function init(): Database.Database {
       modes TEXT NOT NULL DEFAULT '[]',
       languages TEXT NOT NULL DEFAULT '[]',
       contact_instagram TEXT,
+      contact_phone TEXT,
       price_min INTEGER,
       price_max INTEGER,
       price_unit TEXT,
       status TEXT NOT NULL DEFAULT 'approved',
       claimed INTEGER NOT NULL DEFAULT 0,
       verified INTEGER NOT NULL DEFAULT 0,
+      claim_token TEXT,
       created_by_anon TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -83,6 +85,8 @@ function init(): Database.Database {
       trained_duration TEXT,
       helpful_count INTEGER NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'approved',
+      reply TEXT,
+      replied_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -113,13 +117,43 @@ function init(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS claims (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trainer_id INTEGER NOT NULL REFERENCES trainers(id) ON DELETE CASCADE,
+      contact_method TEXT NOT NULL,
+      contact_value TEXT NOT NULL,
+      otp_hash TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      verified_at TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_trainers_area ON trainers(area_id);
     CREATE INDEX IF NOT EXISTS idx_recs_trainer ON recommendations(trainer_id);
     CREATE INDEX IF NOT EXISTS idx_ta_activity ON trainer_activities(activity_id);
   `);
 
+  migrate(db);
   seedIfEmpty(db);
   return db;
+}
+
+// Idempotent column additions for databases created before these columns existed.
+function migrate(db: Database.Database) {
+  const cols = [
+    "ALTER TABLE trainers ADD COLUMN claim_token TEXT",
+    "ALTER TABLE trainers ADD COLUMN contact_phone TEXT",
+    "ALTER TABLE recommendations ADD COLUMN reply TEXT",
+    "ALTER TABLE recommendations ADD COLUMN replied_at TEXT",
+  ];
+  for (const sql of cols) {
+    try {
+      db.exec(sql);
+    } catch {
+      // column already exists — ignore
+    }
+  }
 }
 
 function seedIfEmpty(db: Database.Database) {
