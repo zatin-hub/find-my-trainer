@@ -40,7 +40,9 @@
 
 ## app/ (pages, all force-dynamic)
 - `page.tsx` — home SSR, reads `?city=` · `layout.tsx` — header (logo, CitySwitcher, alert + add CTAs)
-- `add` · `alert` — wizard pages · `admin` — dashboard page · `trainer/[slug]` — profile
+- `add` · `alert` — wizard pages · `trainer/[slug]` — profile
+- `admin/` — sidebar IA: layout.tsx (auth gate + nav w/ badges), pages: overview,
+  trainers, recommendations, reports, alerts, map (provider+usage), audit
 - `activities` (+`[activity]`, `[activity]/[area]`) — SEO browse pages · `sitemap.ts`, `robots.ts`
 
 ## components/
@@ -48,7 +50,9 @@
 - `MapView` — MapLibre + OpenFreeMap, recolor-not-rebuild pins · `LocationPicker` — draggable-pin + address search (add flow)
 - `LocationSearch` — two-tier: instant area matches + debounced street results via /api/geocode · `FilterBar` — master-detail filter panel · `CitySwitcher` — header city popover
 - `AddTrainerForm` — 4-step add wizard · `MatchAlertForm` — 3-step alert wizard · `RecommendForm` — rec on profile
-- `TrainerCard`, `RecommendationList` — display · `AdminDashboard`, `AdminLogin` — admin UI · `ClaimFlow`, `EditProfile` — claim (gated)
+- `TrainerCard`, `RecommendationList` — display · `AdminLogin` + `admin/*` panels
+  (AdminNav, TrainersPanel, RecsPanel, ReportsPanel, AlertsPanel, MapPanel,
+  AuditPanel, shared.tsx = useModerate hook + badges) · `ClaimFlow`, `EditProfile` — claim (gated)
 
 ## Other
 - `data/seed.ts` — taxonomy + 44 areas (city-tagged) + local-only sample trainers
