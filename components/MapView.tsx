@@ -27,16 +27,20 @@ export default function MapView({
   selectedSlug,
   onSelect,
   center,
+  focus,
 }: {
   trainers: Trainer[];
   selectedSlug?: string | null;
   onSelect?: (slug: string) => void;
-  center?: { lat: number; lng: number } | null;
+  center?: { lat: number; lng: number; zoom?: number } | null;
+  // Searched location: gets its own distinct pin (orange) on the map.
+  focus?: { lat: number; lng: number; label?: string } | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const dotsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const focusRef = useRef<maplibregl.Marker | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
@@ -53,7 +57,16 @@ export default function MapView({
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     // Compact attribution renders expanded on load; collapse it to the ⓘ badge
     // (clicking the badge still expands it).
+    // The basemap's one-way street arrows (visible z15+) read as clutter on a
+    // trainer map — hide them whenever a style (re)loads.
+    const hideOneway = () => {
+      for (const id of ["road_oneway", "road_oneway_opposite"]) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      }
+    };
+    map.on("styledata", hideOneway);
     map.on("load", () => {
+      hideOneway();
       containerRef.current
         ?.querySelector(".maplibregl-ctrl-attrib")
         ?.classList.remove("maplibregl-compact-show");
@@ -70,6 +83,8 @@ export default function MapView({
       }
     });
     mapRef.current = map;
+    // Debug handle for headless inspection (harmless in prod).
+    (window as unknown as { __fmtMap?: unknown }).__fmtMap = map;
     return () => {
       map.remove();
       mapRef.current = null;
@@ -127,12 +142,60 @@ export default function MapView({
     if (t) map.flyTo({ center: [t.lng, t.lat], zoom: Math.max(map.getZoom(), 13) });
   }, [selectedSlug, trainers]);
 
-  // Re-center when an area is searched from the location search bar.
+  // Re-center on city change (search focus owns the camera while active).
+  const focusActiveRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !center) return;
-    map.flyTo({ center: [center.lng, center.lat], zoom: 13 });
+    if (!map || !center || focusActiveRef.current) return;
+    map.flyTo({ center: [center.lng, center.lat], zoom: center.zoom ?? 13 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center]);
+
+  // Searched location: orange pin + label, and fit the view to the spot PLUS
+  // the 3 nearest trainers so results stay visible (blind deep zoom hid them).
+  const trainersRef = useRef(trainers);
+  trainersRef.current = trainers;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    focusRef.current?.remove();
+    focusRef.current = null;
+    const hadFocus = focusActiveRef.current;
+    focusActiveRef.current = !!focus;
+    if (!focus) {
+      // Cleared → return to the city view.
+      if (hadFocus && center)
+        map.flyTo({ center: [center.lng, center.lat], zoom: center.zoom ?? 13 });
+      return;
+    }
+    const marker = new maplibregl.Marker({ color: "#ff8a2b" })
+      .setLngLat([focus.lng, focus.lat])
+      .addTo(map);
+    if (focus.label) {
+      marker.setPopup(
+        new maplibregl.Popup({ closeButton: false, offset: 24 }).setText(
+          focus.label
+        )
+      );
+      marker.togglePopup();
+    }
+    focusRef.current = marker;
+
+    const bounds = new maplibregl.LngLatBounds(
+      [focus.lng, focus.lat],
+      [focus.lng, focus.lat]
+    );
+    [...trainersRef.current]
+      .map((t) => ({
+        t,
+        d: (t.lat - focus.lat) ** 2 + (t.lng - focus.lng) ** 2,
+      }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 3)
+      .forEach(({ t }) => bounds.extend([t.lng, t.lat]));
+    map.fitBounds(bounds, { padding: 80, maxZoom: 15.5, duration: 900 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
 
   return (
     <div

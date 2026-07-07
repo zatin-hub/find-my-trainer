@@ -46,7 +46,12 @@ export default function LocationSearch({
 }: {
   areas: Area[];
   activeLabel: string | null;
-  onPick: (p: { lat: number; lng: number; label: string }) => void;
+  onPick: (p: {
+    lat: number;
+    lng: number;
+    label: string;
+    kind: "area" | "place";
+  }) => void;
   onClear: () => void;
   className?: string;
   city?: string;
@@ -131,7 +136,7 @@ export default function LocationSearch({
   function choose(s: Suggestion) {
     // Short label for the "Near X" chip; street results keep their first part.
     const label = s.kind === "area" ? s.label : s.label.split(",")[0].trim();
-    onPick({ lat: s.lat, lng: s.lng, label });
+    onPick({ lat: s.lat, lng: s.lng, label, kind: s.kind });
     setQuery("");
     setPlaces([]);
     setOpen(false);

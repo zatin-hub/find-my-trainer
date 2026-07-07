@@ -44,7 +44,11 @@ export default function HomeClient({
 
   // Location focus from the area search bar: re-centers the map and sorts
   // trainers by distance ("closer or same") without hard-filtering them out.
-  const [near, setNear] = useState<{ lat: number; lng: number; label: string } | null>(null);
+  const [near, setNear] = useState<{
+    lat: number;
+    lng: number;
+    label: string;
+  } | null>(null);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -189,7 +193,7 @@ export default function HomeClient({
           cityName={getCity(city).name}
           activeLabel={near?.label ?? null}
           onPick={(p) => {
-            setNear(p);
+            setNear({ lat: p.lat, lng: p.lng, label: p.label });
             setSelected(null);
           }}
           onClear={() => setNear(null)}
@@ -304,7 +308,8 @@ export default function HomeClient({
             trainers={trainers}
             selectedSlug={selected}
             onSelect={setSelected}
-            center={near ?? cityCenter}
+            center={cityCenter}
+            focus={near}
           />
         </div>
 
