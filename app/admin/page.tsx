@@ -8,6 +8,7 @@ import {
 } from "@/lib/queries";
 import { isAdmin } from "@/lib/admin";
 import { getMapConfig } from "@/lib/mapstyle";
+import { getUsage } from "@/lib/usage";
 import AdminLogin from "@/components/AdminLogin";
 import AdminDashboard from "@/components/AdminDashboard";
 
@@ -29,7 +30,7 @@ export default async function AdminPage() {
     );
   }
 
-  const [stats, reports, trainers, recs, notifications, audit, mapConfig] =
+  const [stats, reports, trainers, recs, notifications, audit, mapConfig, usage] =
     await Promise.all([
       adminStats(),
       adminListReports(),
@@ -38,6 +39,7 @@ export default async function AdminPage() {
       adminListNotifications(),
       adminListAudit(),
       getMapConfig(),
+      getUsage(7),
     ]);
   return (
     <AdminDashboard
@@ -49,6 +51,7 @@ export default async function AdminPage() {
       audit={audit}
       mapProvider={mapConfig.provider}
       olaConfigured={!!process.env.OLA_MAPS_API_KEY}
+      usage={usage}
     />
   );
 }

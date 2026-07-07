@@ -15,7 +15,8 @@
 - `geocache.ts` — 30-day geocode cache: KV (prod, `geo:` prefix on RATE_LIMIT ns) / memory (dev). `cacheGet`, `cacheSet`, `forwardKey`, `reverseKey`
 - `settings.ts` — admin-tunable key/value store (settings table). `getSetting`, `setSetting`
 - `mapstyle.ts` — tile-provider switch (hybrid=OpenFreeMap / ola), server-side. `getMapConfig`, `resolveMapStyle`
-- `map-client.ts` — client-safe helpers; appends api_key to Ola sub-requests. `olaTransform`
+- `map-client.ts` — client-safe helpers; appends api_key to Ola sub-requests + batched tile-usage beacon. `olaTransform`
+- `usage.ts` — self-measured provider usage counters (usage_counters table). `bumpUsage`, `getUsage`
 - `moderation.ts` — destructive admin cascades (tested). `deleteTrainerCascade`, `deleteRecommendationCascade`
 - `fakescore.ts` — fake-entry risk heuristics 0–100. `assessFake`
 - `votes.ts` — helpful-vote toggle + IP dedup. `applyVote`, `hashIp`

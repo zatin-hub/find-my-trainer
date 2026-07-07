@@ -182,6 +182,12 @@ function migrate(db: Database.Database) {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS usage_counters (
+      day TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, kind)
+    )`,
   ];
   for (const sql of cols) {
     try {

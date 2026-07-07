@@ -6,6 +6,7 @@
 
 import { getCity, type CityBox } from "@/lib/cities";
 import { cacheGet, cacheSet, forwardKey, reverseKey } from "@/lib/geocache";
+import { bumpUsage } from "@/lib/usage";
 
 export interface GeoResult {
   label: string;
@@ -170,16 +171,24 @@ export async function geocode(q: string, citySlug?: string): Promise<GeoResult[]
   const cached = await cacheGet(ck);
   if (cached) {
     try {
-      return JSON.parse(cached) as GeoResult[];
+      const parsed = JSON.parse(cached) as GeoResult[];
+      await bumpUsage("geocode_fwd_cache");
+      return parsed;
     } catch {
       /* fall through to live lookup */
     }
   }
 
+  const usingOla = !!OLA_KEY();
   const [o, a, b] = await Promise.all([
     ola(query, citySlug),
     photon(query, citySlug),
     nominatim(query, citySlug),
+  ]);
+  await Promise.all([
+    usingOla ? bumpUsage("geocode_fwd_ola") : null,
+    bumpUsage("geocode_fwd_photon"),
+    bumpUsage("geocode_fwd_nominatim"),
   ]);
 
   // Ola first (best Indian granularity), then interleave the OSM providers.
@@ -210,8 +219,12 @@ export async function reverseGeocode(
 ): Promise<string | null> {
   const ck = reverseKey(lat, lng);
   const cached = await cacheGet(ck);
-  if (cached) return cached;
+  if (cached) {
+    await bumpUsage("geocode_rev_cache");
+    return cached;
+  }
 
+  await bumpUsage("geocode_rev_live");
   const label = await reverseLive(lat, lng);
   if (label) await cacheSet(ck, label);
   return label;
