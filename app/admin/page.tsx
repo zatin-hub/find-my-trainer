@@ -3,6 +3,8 @@ import {
   adminListRecommendations,
   adminListReports,
   adminListTrainers,
+  adminListAudit,
+  adminStats,
 } from "@/lib/queries";
 import { isAdmin } from "@/lib/admin";
 import AdminLogin from "@/components/AdminLogin";
@@ -26,12 +28,23 @@ export default async function AdminPage() {
     );
   }
 
+  const [stats, reports, trainers, recs, notifications, audit] =
+    await Promise.all([
+      adminStats(),
+      adminListReports(),
+      adminListTrainers(),
+      adminListRecommendations(),
+      adminListNotifications(),
+      adminListAudit(),
+    ]);
   return (
     <AdminDashboard
-      reports={adminListReports()}
-      trainers={adminListTrainers()}
-      recs={adminListRecommendations()}
-      notifications={adminListNotifications()}
+      stats={stats}
+      reports={reports}
+      trainers={trainers}
+      recs={recs}
+      notifications={notifications}
+      audit={audit}
     />
   );
 }
