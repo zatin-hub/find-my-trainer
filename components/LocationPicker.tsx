@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { getCity } from "@/lib/cities";
+import { olaTransform } from "@/lib/map-client";
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
@@ -19,12 +20,14 @@ export default function LocationPicker({
   lng,
   city,
   onChange,
+  styleUrl,
 }: {
   lat: number | null;
   lng: number | null;
   city?: string;
   // label is filled asynchronously once reverse-geocoding resolves.
   onChange: (lat: number, lng: number, label?: string) => void;
+  styleUrl?: string;
 }) {
   const cityRef = useRef(city);
   cityRef.current = city;
@@ -64,10 +67,11 @@ export default function LocationPicker({
         : [cityCenter.lng, cityCenter.lat];
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: STYLE_URL,
+      style: styleUrl || STYLE_URL,
       center: start,
       zoom: lat != null ? 14 : 11,
       attributionControl: { compact: true },
+      transformRequest: olaTransform(styleUrl || STYLE_URL),
     });
     map.on("load", () => {
       containerRef.current

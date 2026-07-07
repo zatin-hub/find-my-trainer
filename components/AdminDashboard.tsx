@@ -58,6 +58,8 @@ export default function AdminDashboard({
   recs,
   notifications,
   audit,
+  mapProvider,
+  olaConfigured,
 }: {
   stats: AdminStats;
   reports: AdminReport[];
@@ -65,6 +67,8 @@ export default function AdminDashboard({
   recs: AdminRecRow[];
   notifications: AdminNotification[];
   audit: AdminAuditRow[];
+  mapProvider: "hybrid" | "ola";
+  olaConfigured: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -150,6 +154,49 @@ export default function AdminDashboard({
         <StatCard label="Recommendations" value={stats.recs_total} />
         <StatCard label="Recs pending" value={stats.recs_pending} tone="text-amber-300" />
         <StatCard label="Open reports" value={stats.reports_open} tone="text-rose-300" />
+      </section>
+
+      {/* Map provider (benchmarking switch) */}
+      <section className="mt-8">
+        <h2 className="mb-2 text-lg font-semibold">Map tiles provider</h2>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
+          {(
+            [
+              ["hybrid", "Hybrid — OpenFreeMap tiles + Ola search (free, unmetered)"],
+              ["ola", "All Ola — Ola tiles + Ola search (POI labels, metered 5M/mo)"],
+            ] as const
+          ).map(([value, label]) => (
+            <label key={value} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="map_provider"
+                checked={mapProvider === value}
+                disabled={busy || (value === "ola" && !olaConfigured)}
+                onChange={async () => {
+                  const json = await act("set_map_provider", 0, { value });
+                  if (json?.error) window.alert(String(json.error));
+                }}
+                className="accent-pink-500"
+              />
+              <span
+                className={
+                  mapProvider === value ? "text-pink-200" : "text-slate-300"
+                }
+              >
+                {label}
+              </span>
+            </label>
+          ))}
+          {!olaConfigured && (
+            <span className="text-xs text-amber-300">
+              OLA_MAPS_API_KEY not set — All-Ola disabled
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Applies on next page load for all visitors. Switch back anytime;
+          changes are audit-logged.
+        </p>
       </section>
 
       {/* Reports */}

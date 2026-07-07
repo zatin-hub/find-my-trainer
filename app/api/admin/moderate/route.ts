@@ -6,6 +6,7 @@ import {
   deleteRecommendationCascade,
   deleteTrainerCascade,
 } from "@/lib/moderation";
+import { setSetting } from "@/lib/settings";
 
 type Action =
   | "approve_trainer"
@@ -17,7 +18,8 @@ type Action =
   | "delete_trainer"
   | "delete_rec"
   | "set_verified"
-  | "verify_instagram";
+  | "verify_instagram"
+  | "set_map_provider";
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin()))
@@ -32,7 +34,8 @@ export async function POST(req: NextRequest) {
 
   const action = body.action as Action;
   const id = Number(body.id);
-  if (!Number.isInteger(id))
+  // set_map_provider is a global setting — no target id.
+  if (!Number.isInteger(id) && action !== "set_map_provider")
     return NextResponse.json({ error: "Bad id" }, { status: 400 });
 
   const d = await db();
@@ -48,11 +51,12 @@ export async function POST(req: NextRequest) {
     hide_rec: "recommendation",
     delete_rec: "recommendation",
     resolve_report: "report",
+    set_map_provider: "setting",
   };
   const logAudit = (detail?: string) =>
     d.run(
       "INSERT INTO admin_audit (action, target_type, target_id, detail) VALUES (?, ?, ?, ?)",
-      [action, TARGET[action] ?? "unknown", id, detail ?? null]
+      [action, TARGET[action] ?? "unknown", Number.isInteger(id) ? id : 0, detail ?? null]
     );
 
   let auditDetail: string | undefined;
@@ -98,6 +102,19 @@ export async function POST(req: NextRequest) {
       await d.run("DELETE FROM notifications WHERE trainer_id = ?", [id]);
       await d.run("UPDATE trainers SET status = 'merged', merged_into = ? WHERE id = ?", [into, id]);
       auditDetail = `merged into #${into}`;
+      break;
+    }
+    case "set_map_provider": {
+      const value = String(body.value || "");
+      if (value !== "hybrid" && value !== "ola")
+        return NextResponse.json({ error: "Bad provider" }, { status: 400 });
+      if (value === "ola" && !process.env.OLA_MAPS_API_KEY)
+        return NextResponse.json(
+          { error: "OLA_MAPS_API_KEY is not configured on this deployment" },
+          { status: 400 }
+        );
+      await setSetting("map_provider", value);
+      auditDetail = `map provider -> ${value}`;
       break;
     }
     case "delete_trainer":

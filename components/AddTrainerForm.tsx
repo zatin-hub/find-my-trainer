@@ -49,9 +49,11 @@ const MODE_OPTIONS: [string, string][] = [
 export default function AddTrainerForm({
   activities,
   areas,
+  mapStyleUrl,
 }: {
   activities: Activity[];
   areas: Area[];
+  mapStyleUrl?: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -312,6 +314,7 @@ export default function AddTrainerForm({
                   lat={lat}
                   lng={lng}
                   city={city}
+                  styleUrl={mapStyleUrl}
                   onChange={(la, ln) => {
                     setLat(la);
                     setLng(ln);

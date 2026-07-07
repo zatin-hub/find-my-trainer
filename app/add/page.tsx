@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { getActivities, getAreas } from "@/lib/queries";
+import { getMapConfig } from "@/lib/mapstyle";
 import AddTrainerForm from "@/components/AddTrainerForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function AddPage() {
-  const [activities, areas] = await Promise.all([getActivities(), getAreas()]);
+  const [activities, areas, mapConfig] = await Promise.all([
+    getActivities(),
+    getAreas(),
+    getMapConfig(),
+  ]);
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <Link href="/" className="text-sm text-pink-400 hover:underline">
@@ -17,7 +22,11 @@ export default async function AddPage() {
         needed — it&apos;s anonymous.
       </p>
       <div className="mt-5">
-        <AddTrainerForm activities={activities} areas={areas} />
+        <AddTrainerForm
+          activities={activities}
+          areas={areas}
+          mapStyleUrl={mapConfig.styleUrl}
+        />
       </div>
     </div>
   );

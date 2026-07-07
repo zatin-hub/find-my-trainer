@@ -24,11 +24,13 @@ export default function HomeClient({
   activities,
   areas,
   city,
+  mapStyleUrl,
 }: {
   initialTrainers: Trainer[];
   activities: Activity[];
   areas: Area[];
   city: string;
+  mapStyleUrl?: string;
 }) {
   const [trainers, setTrainers] = useState<Trainer[]>(initialTrainers);
   const [loading, setLoading] = useState(false);
@@ -310,6 +312,7 @@ export default function HomeClient({
             onSelect={setSelected}
             center={cityCenter}
             focus={near}
+            styleUrl={mapStyleUrl}
           />
         </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Trainer } from "@/lib/types";
+import { olaTransform } from "@/lib/map-client";
 
 const BENGALURU: [number, number] = [77.5946, 12.9716];
 
@@ -28,6 +29,7 @@ export default function MapView({
   onSelect,
   center,
   focus,
+  styleUrl,
 }: {
   trainers: Trainer[];
   selectedSlug?: string | null;
@@ -35,6 +37,8 @@ export default function MapView({
   center?: { lat: number; lng: number; zoom?: number } | null;
   // Searched location: gets its own distinct pin (orange) on the map.
   focus?: { lat: number; lng: number; label?: string } | null;
+  // Admin-selected tile style (hybrid=OpenFreeMap / ola). Defaults to hybrid.
+  styleUrl?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -44,15 +48,17 @@ export default function MapView({
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
-  // Init map once.
+  // Init map once (per style — admin provider switch remounts via key/prop).
+  const activeStyle = styleUrl || STYLE_URL;
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: STYLE_URL,
+      style: activeStyle,
       center: BENGALURU,
       zoom: 11,
       attributionControl: { compact: true },
+      transformRequest: olaTransform(activeStyle),
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     // Compact attribution renders expanded on load; collapse it to the ⓘ badge
@@ -72,11 +78,12 @@ export default function MapView({
         ?.classList.remove("maplibregl-compact-show");
     });
     map.on("error", (e) => {
-      // If the primary tile source fails (e.g. offline), swap to demo tiles.
+      // Tile/style failure → degrade gracefully: Ola style falls back to
+      // OpenFreeMap; OpenFreeMap falls back to demo tiles.
       const msg = String(e?.error?.message || "");
       if (msg.includes("style") || msg.includes("Failed to fetch")) {
         try {
-          map.setStyle(FALLBACK_STYLE);
+          map.setStyle(activeStyle !== STYLE_URL ? STYLE_URL : FALLBACK_STYLE);
         } catch {
           /* ignore */
         }
@@ -89,6 +96,8 @@ export default function MapView({
       map.remove();
       mapRef.current = null;
     };
+    // activeStyle is fixed for the lifetime of a page load (SSR-provided).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Build markers only when the trainer set changes. The marker root is a

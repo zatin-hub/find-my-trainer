@@ -177,6 +177,11 @@ function migrate(db: Database.Database) {
     "ALTER TABLE trainers ADD COLUMN ig_checked_at TEXT",
     "ALTER TABLE trainers ADD COLUMN custom_activity TEXT",
     "ALTER TABLE areas ADD COLUMN city TEXT NOT NULL DEFAULT 'bengaluru'",
+    `CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
   ];
   for (const sql of cols) {
     try {

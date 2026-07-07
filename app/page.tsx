@@ -1,6 +1,7 @@
 import HomeClient from "@/components/HomeClient";
 import { getActivities, getAreas, listTrainers } from "@/lib/queries";
 import { getCity } from "@/lib/cities";
+import { getMapConfig } from "@/lib/mapstyle";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,11 @@ export default async function Home({
 }) {
   const { city: cityParam } = await searchParams;
   const city = getCity(cityParam).slug; // normalize/validate to a known city
-  const [trainers, activities, areas] = await Promise.all([
+  const [trainers, activities, areas, mapConfig] = await Promise.all([
     listTrainers({ city }),
     getActivities(),
     getAreas(),
+    getMapConfig(),
   ]);
   return (
     <HomeClient
@@ -22,6 +24,7 @@ export default async function Home({
       activities={activities}
       areas={areas}
       city={city}
+      mapStyleUrl={mapConfig.styleUrl}
     />
   );
 }
