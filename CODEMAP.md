@@ -11,7 +11,8 @@
 - `queries.ts` — all read queries + admin lists/stats (risk-sorted). `listTrainers`, `getTrainerBySlug`, `adminListTrainers`, `adminStats`, `findSimilarTrainers`
 - `types.ts` — shared interfaces. `Trainer`, `Area` (has `city`), `Recommendation`
 - `cities.ts` — city SSOT (slugs/centers/bboxes). `CITIES`, `DEFAULT_CITY`, `getCity`, `inCity`
-- `geocode.ts` — Photon+Nominatim merged forward/reverse geocode, city-bounded. `geocode`, `reverseGeocode`
+- `geocode.ts` — Ola (env-gated) + Photon + Nominatim merged forward/reverse geocode, city-bounded, cached. `geocode`, `reverseGeocode`
+- `geocache.ts` — 30-day geocode cache: KV (prod, `geo:` prefix on RATE_LIMIT ns) / memory (dev). `cacheGet`, `cacheSet`, `forwardKey`, `reverseKey`
 - `moderation.ts` — destructive admin cascades (tested). `deleteTrainerCascade`, `deleteRecommendationCascade`
 - `fakescore.ts` — fake-entry risk heuristics 0–100. `assessFake`
 - `votes.ts` — helpful-vote toggle + IP dedup. `applyVote`, `hashIp`
@@ -41,7 +42,7 @@
 ## components/
 - `HomeClient` — home state hub: filters, search, city scoping, list+map, scroll fade
 - `MapView` — MapLibre + OpenFreeMap, recolor-not-rebuild pins · `LocationPicker` — draggable-pin + address search (add flow)
-- `LocationSearch` — client-side area autocomplete · `FilterBar` — master-detail filter panel · `CitySwitcher` — header city popover
+- `LocationSearch` — two-tier: instant area matches + debounced street results via /api/geocode · `FilterBar` — master-detail filter panel · `CitySwitcher` — header city popover
 - `AddTrainerForm` — 4-step add wizard · `MatchAlertForm` — 3-step alert wizard · `RecommendForm` — rec on profile
 - `TrainerCard`, `RecommendationList` — display · `AdminDashboard`, `AdminLogin` — admin UI · `ClaimFlow`, `EditProfile` — claim (gated)
 

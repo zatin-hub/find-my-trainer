@@ -185,10 +185,11 @@ export default function HomeClient({
         {/* Above the map: area search */}
         <LocationSearch
           areas={areasInCity}
+          city={city}
           cityName={getCity(city).name}
           activeLabel={near?.label ?? null}
-          onSelect={(a) => {
-            setNear({ lat: a.lat, lng: a.lng, label: a.name });
+          onPick={(p) => {
+            setNear(p);
             setSelected(null);
           }}
           onClear={() => setNear(null)}

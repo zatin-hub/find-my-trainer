@@ -5,12 +5,13 @@
 // Results are biased + bounded to the active city (see lib/cities).
 
 import { getCity, type CityBox } from "@/lib/cities";
+import { cacheGet, cacheSet, forwardKey, reverseKey } from "@/lib/geocache";
 
 export interface GeoResult {
   label: string;
   lat: number;
   lng: number;
-  source: "photon" | "nominatim";
+  source: "ola" | "photon" | "nominatim";
   type?: string;
 }
 
@@ -115,19 +116,75 @@ async function nominatim(q: string, citySlug?: string): Promise<GeoResult[]> {
   return out;
 }
 
+// ---- Ola Maps (Krutrim) -----------------------------------------------------
+// Preferred provider when OLA_MAPS_API_KEY is set (5M free calls/mo, best
+// free-tier granularity for Indian addresses). Defensive parsing: any schema
+// surprise yields [] and the OSM providers below still answer.
+
+const OLA_KEY = () => process.env.OLA_MAPS_API_KEY;
+
+interface OlaPrediction {
+  description?: string;
+  formatted_address?: string;
+  geometry?: { location?: { lat?: number; lng?: number } };
+}
+
+async function ola(q: string, citySlug?: string): Promise<GeoResult[]> {
+  const key = OLA_KEY();
+  if (!key) return [];
+  const city = getCity(citySlug);
+  const url =
+    `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(q)}` +
+    `&location=${city.center.lat},${city.center.lng}&api_key=${key}`;
+  const data = (await fetchJson(url)) as {
+    predictions?: OlaPrediction[];
+  } | null;
+  if (!Array.isArray(data?.predictions)) return [];
+  const out: GeoResult[] = [];
+  for (const p of data.predictions) {
+    const lat = p.geometry?.location?.lat;
+    const lng = p.geometry?.location?.lng;
+    if (typeof lat !== "number" || typeof lng !== "number") continue;
+    if (!inBox(lat, lng, city.bbox)) continue;
+    out.push({
+      label: p.description || p.formatted_address || "Unnamed place",
+      lat,
+      lng,
+      source: "ola",
+    });
+  }
+  return out;
+}
+
 // ---- Merge ----------------------------------------------------------------
 
-/** Forward geocode via both providers within a city, merged + deduped (max 8). */
+/**
+ * Forward geocode within a city, cached 30 days. Ola preferred when a key is
+ * configured; Photon+Nominatim merged as the always-available base.
+ */
 export async function geocode(q: string, citySlug?: string): Promise<GeoResult[]> {
   const query = q.trim();
   if (query.length < 3) return [];
-  const [a, b] = await Promise.all([
+
+  const ck = forwardKey(query, citySlug);
+  const cached = await cacheGet(ck);
+  if (cached) {
+    try {
+      return JSON.parse(cached) as GeoResult[];
+    } catch {
+      /* fall through to live lookup */
+    }
+  }
+
+  const [o, a, b] = await Promise.all([
+    ola(query, citySlug),
     photon(query, citySlug),
     nominatim(query, citySlug),
   ]);
 
-  const merged: GeoResult[] = [];
-  const seen = new Set<string>();
+  // Ola first (best Indian granularity), then interleave the OSM providers.
+  const merged: GeoResult[] = [...o];
+  const seen = new Set(o.map((r) => `${r.lat.toFixed(4)},${r.lng.toFixed(4)}`));
   const max = Math.max(a.length, b.length);
   for (let i = 0; i < max; i++) {
     for (const r of [a[i], b[i]]) {
@@ -138,14 +195,29 @@ export async function geocode(q: string, citySlug?: string): Promise<GeoResult[]
       merged.push(r);
     }
   }
-  return merged.slice(0, 8);
+  const results = merged.slice(0, 8);
+  // Cache only non-empty answers — a transient provider outage shouldn't pin
+  // "no results" for 30 days.
+  if (results.length) await cacheSet(ck, JSON.stringify(results));
+  return results;
 }
 
-/** Reverse geocode a point to a human label (Nominatim, Photon fallback). */
+/** Reverse geocode a point to a human label (Nominatim, Photon fallback).
+ *  Cached 30 days on ~11 m rounded coordinates — pin drags hit the cache. */
 export async function reverseGeocode(
   lat: number,
   lng: number
 ): Promise<string | null> {
+  const ck = reverseKey(lat, lng);
+  const cached = await cacheGet(ck);
+  if (cached) return cached;
+
+  const label = await reverseLive(lat, lng);
+  if (label) await cacheSet(ck, label);
+  return label;
+}
+
+async function reverseLive(lat: number, lng: number): Promise<string | null> {
   const nUrl =
     `https://nominatim.openstreetmap.org/reverse?format=jsonv2` +
     `&lat=${lat}&lon=${lng}&zoom=18`;

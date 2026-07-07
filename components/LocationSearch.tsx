@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Area } from "@/lib/types";
 
-// Free, client-side area autocomplete over the known Bengaluru localities — no
-// external geocoder, no API key, instant. Ranks exact/prefix matches first.
+// Two-tier location search for the home map:
+//   1. Instant client-side matches over the city's known areas (no API call).
+//   2. Debounced street/landmark results from /api/geocode (Ola/Photon/
+//      Nominatim behind a cached proxy) for anything finer than an area.
 function rank(areas: Area[], q: string): Area[] {
   const needle = q.trim().toLowerCase();
   if (!needle) return [];
@@ -20,30 +22,100 @@ function rank(areas: Area[], q: string): Area[] {
     })
     .filter((s) => s.score >= 0)
     .sort((x, y) => x.score - y.score || x.a.name.localeCompare(y.a.name));
-  return scored.slice(0, 6).map((s) => s.a);
+  return scored.slice(0, 4).map((s) => s.a);
 }
+
+interface Place {
+  label: string;
+  lat: number;
+  lng: number;
+}
+
+type Suggestion =
+  | { kind: "area"; label: string; lat: number; lng: number; id: string }
+  | { kind: "place"; label: string; lat: number; lng: number; id: string };
 
 export default function LocationSearch({
   areas,
   activeLabel,
-  onSelect,
+  onPick,
   onClear,
   className,
+  city,
   cityName = "Bengaluru",
 }: {
   areas: Area[];
   activeLabel: string | null;
-  onSelect: (area: Area) => void;
+  onPick: (p: { lat: number; lng: number; label: string }) => void;
   onClear: () => void;
   className?: string;
+  city?: string;
   cityName?: string;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [searching, setSearching] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const suggestions = useMemo(() => rank(areas, query), [areas, query]);
+  const areaMatches = useMemo(() => rank(areas, query), [areas, query]);
+
+  // Debounced street-level lookup once the query is substantial.
+  useEffect(() => {
+    if (query.trim().length < 3) {
+      setPlaces([]);
+      return;
+    }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(
+          `/api/geocode?q=${encodeURIComponent(query)}&city=${city ?? ""}`,
+          { signal: ctrl.signal }
+        );
+        const d = await res.json();
+        setPlaces(
+          ((d.results ?? []) as Place[]).slice(0, 5).map((r) => ({
+            label: r.label,
+            lat: r.lat,
+            lng: r.lng,
+          }))
+        );
+      } catch {
+        /* keep area matches only */
+      } finally {
+        setSearching(false);
+      }
+    }, 350);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [query, city]);
+
+  const suggestions: Suggestion[] = useMemo(() => {
+    const areaLabels = new Set(areaMatches.map((a) => a.name.toLowerCase()));
+    return [
+      ...areaMatches.map((a) => ({
+        kind: "area" as const,
+        label: a.name,
+        lat: a.lat,
+        lng: a.lng,
+        id: `a-${a.id}`,
+      })),
+      ...places
+        .filter((p) => !areaLabels.has(p.label.toLowerCase()))
+        .map((p, i) => ({
+          kind: "place" as const,
+          label: p.label,
+          lat: p.lat,
+          lng: p.lng,
+          id: `p-${i}`,
+        })),
+    ];
+  }, [areaMatches, places]);
 
   // Close the dropdown when clicking outside.
   useEffect(() => {
@@ -56,9 +128,12 @@ export default function LocationSearch({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  function choose(area: Area) {
-    onSelect(area);
+  function choose(s: Suggestion) {
+    // Short label for the "Near X" chip; street results keep their first part.
+    const label = s.kind === "area" ? s.label : s.label.split(",")[0].trim();
+    onPick({ lat: s.lat, lng: s.lng, label });
     setQuery("");
+    setPlaces([]);
     setOpen(false);
   }
 
@@ -94,7 +169,7 @@ export default function LocationSearch({
             }}
             onFocus={() => query && setOpen(true)}
             onKeyDown={onKeyDown}
-            placeholder={`Search an area in ${cityName}…`}
+            placeholder={`Search an area or street in ${cityName}…`}
             className="input pl-9"
             role="combobox"
             aria-expanded={open}
@@ -113,29 +188,34 @@ export default function LocationSearch({
         )}
       </div>
 
-      {open && suggestions.length > 0 && (
+      {open && (suggestions.length > 0 || searching) && (
         <ul
           role="listbox"
           className="glass absolute z-20 mt-1 w-full overflow-hidden rounded-xl bg-slate-950/80 shadow-xl"
         >
-          {suggestions.map((a, i) => (
-            <li key={a.id} role="option" aria-selected={i === highlight}>
+          {suggestions.map((s, i) => (
+            <li key={s.id} role="option" aria-selected={i === highlight}>
               <button
                 type="button"
                 onMouseEnter={() => setHighlight(i)}
-                onClick={() => choose(a)}
+                onClick={() => choose(s)}
                 className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${
                   i === highlight
                     ? "bg-pink-500/15 text-pink-200"
                     : "text-slate-200 hover:bg-white/5"
                 }`}
               >
-                <span className="text-slate-500">📍</span>
-                {a.name}
-                <span className="ml-auto text-xs text-slate-500">{cityName}</span>
+                <span className="text-slate-500">{s.kind === "area" ? "📍" : "🛣️"}</span>
+                <span className="min-w-0 truncate">{s.label}</span>
+                <span className="ml-auto shrink-0 text-xs text-slate-500">
+                  {s.kind === "area" ? cityName : "street"}
+                </span>
               </button>
             </li>
           ))}
+          {searching && (
+            <li className="px-3 py-2 text-xs text-slate-500">Searching streets…</li>
+          )}
         </ul>
       )}
     </div>
