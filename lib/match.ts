@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { db } from "@/lib/database";
 import { distanceMeters } from "@/lib/geo";
 import { sendEmail } from "@/lib/notify";
 
@@ -20,43 +20,32 @@ interface PinRow {
  * Returns the number of new notifications sent.
  */
 export async function notifyMatchingSeekers(trainerId: number): Promise<number> {
-  const db = getDb();
-  const trainer = db
-    .prepare(
-      `SELECT t.id, t.name, t.slug, t.lat, t.lng, t.price_min
-       FROM trainers t WHERE t.id = ? AND t.status = 'approved'`
-    )
-    .get(trainerId) as
-    | {
-        id: number;
-        name: string;
-        slug: string;
-        lat: number;
-        lng: number;
-        price_min: number | null;
-      }
-    | undefined;
+  const d = await db();
+  const trainer = await d.get<{
+    id: number;
+    name: string;
+    slug: string;
+    lat: number;
+    lng: number;
+    price_min: number | null;
+  }>(
+    `SELECT t.id, t.name, t.slug, t.lat, t.lng, t.price_min
+     FROM trainers t WHERE t.id = ? AND t.status = 'approved'`,
+    [trainerId]
+  );
   if (!trainer) return 0;
 
   const activityIds = (
-    db
-      .prepare("SELECT activity_id FROM trainer_activities WHERE trainer_id = ?")
-      .all(trainerId) as { activity_id: number }[]
+    await d.all<{ activity_id: number }>(
+      "SELECT activity_id FROM trainer_activities WHERE trainer_id = ?",
+      [trainerId]
+    )
   ).map((r) => r.activity_id);
 
-  const pins = db
-    .prepare(
-      `SELECT sp.id, sp.email, sp.activity_id, sp.area_id, sp.radius_m, sp.budget_max,
-              ar.lat AS area_lat, ar.lng AS area_lng
-       FROM seeker_pins sp LEFT JOIN areas ar ON ar.id = sp.area_id`
-    )
-    .all() as PinRow[];
-
-  const insert = db.prepare(
-    "INSERT OR IGNORE INTO notifications (seeker_pin_id, trainer_id, sent) VALUES (?, ?, 0)"
-  );
-  const markSent = db.prepare(
-    "UPDATE notifications SET sent = 1 WHERE seeker_pin_id = ? AND trainer_id = ?"
+  const pins = await d.all<PinRow>(
+    `SELECT sp.id, sp.email, sp.activity_id, sp.area_id, sp.radius_m, sp.budget_max,
+            ar.lat AS area_lat, ar.lng AS area_lng
+     FROM seeker_pins sp LEFT JOIN areas ar ON ar.id = sp.area_id`
   );
 
   let sentCount = 0;
@@ -82,7 +71,10 @@ export async function notifyMatchingSeekers(trainerId: number): Promise<number> 
     }
 
     // Dedup: only notify once per (pin, trainer)
-    const info = insert.run(pin.id, trainerId);
+    const info = await d.run(
+      "INSERT OR IGNORE INTO notifications (seeker_pin_id, trainer_id, sent) VALUES (?, ?, 0)",
+      [pin.id, trainerId]
+    );
     if (info.changes === 0) continue; // already notified
 
     const ok = await sendEmail({
@@ -91,7 +83,10 @@ export async function notifyMatchingSeekers(trainerId: number): Promise<number> 
       text: `A trainer matching your alert was just added on findmytrainer.\n\n${trainer.name}\n${BASE}/trainer/${trainer.slug}\n\nYou're receiving this because you set up an alert. Reply to unsubscribe (stub).`,
     });
     if (ok) {
-      markSent.run(pin.id, trainerId);
+      await d.run(
+        "UPDATE notifications SET sent = 1 WHERE seeker_pin_id = ? AND trainer_id = ?",
+        [pin.id, trainerId]
+      );
       sentCount++;
     }
   }

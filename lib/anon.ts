@@ -16,6 +16,7 @@ export function setAnonCookie(res: NextResponse, anonId: string): NextResponse {
   res.cookies.set(COOKIE, anonId, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: MAX_AGE,
     path: "/",
   });

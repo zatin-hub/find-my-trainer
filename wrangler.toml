@@ -1,0 +1,33 @@
+name = "find-my-trainer"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# D1 database. Fill database_id after: wrangler d1 create find-my-trainer
+[[d1_databases]]
+binding = "DB"
+database_name = "find-my-trainer"
+database_id = "735e85d1-906e-4065-9e86-116978f1b4db"
+migrations_dir = "migrations"
+
+# KV namespace for rate limiting. Fill id after:
+#   wrangler kv namespace create RATE_LIMIT
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "a8e71bf6be0343f5bb56d85c365efa93"
+
+# Persist Worker logs (console.* + exceptions) — viewable in the Cloudflare
+# dashboard (Workers Logs). Live stream: `npx wrangler tail find-my-trainer`.
+[observability]
+enabled = true
+
+# Non-secret config. Secrets (ADMIN_KEY, RESEND_API_KEY, EMAIL_FROM) go via
+# `wrangler secret put`, not here.
+[vars]
+NEXT_PUBLIC_SITE_URL = "https://find-my-trainer.bhoj-jatin.workers.dev"
+EXPOSE_DEV_OTP = "false"
+ENABLE_CLAIMS = "false"

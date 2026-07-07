@@ -17,27 +17,62 @@ export const ACTIVITIES: { slug: string; name: string; icon: string }[] = [
   { slug: "kids-fitness", name: "Kids Fitness", icon: "🧒" },
 ];
 
-export const AREAS: { slug: string; name: string; lat: number; lng: number }[] = [
-  { slug: "indiranagar", name: "Indiranagar", lat: 12.9719, lng: 77.6412 },
-  { slug: "koramangala", name: "Koramangala", lat: 12.9352, lng: 77.6245 },
-  { slug: "hsr-layout", name: "HSR Layout", lat: 12.9081, lng: 77.6476 },
-  { slug: "whitefield", name: "Whitefield", lat: 12.9698, lng: 77.75 },
-  { slug: "jayanagar", name: "Jayanagar", lat: 12.925, lng: 77.5938 },
-  { slug: "jp-nagar", name: "JP Nagar", lat: 12.9063, lng: 77.5857 },
-  { slug: "marathahalli", name: "Marathahalli", lat: 12.9591, lng: 77.6974 },
-  { slug: "bellandur", name: "Bellandur", lat: 12.9304, lng: 77.6784 },
-  { slug: "btm-layout", name: "BTM Layout", lat: 12.9166, lng: 77.6101 },
-  { slug: "electronic-city", name: "Electronic City", lat: 12.8452, lng: 77.6602 },
-  { slug: "malleshwaram", name: "Malleshwaram", lat: 13.0035, lng: 77.5647 },
-  { slug: "rajajinagar", name: "Rajajinagar", lat: 12.9982, lng: 77.555 },
-  { slug: "banashankari", name: "Banashankari", lat: 12.9255, lng: 77.5468 },
-  { slug: "yelahanka", name: "Yelahanka", lat: 13.1007, lng: 77.5963 },
-  { slug: "hebbal", name: "Hebbal", lat: 13.0358, lng: 77.597 },
-  { slug: "sarjapur-road", name: "Sarjapur Road", lat: 12.901, lng: 77.687 },
-  { slug: "mg-road", name: "MG Road", lat: 12.9756, lng: 77.6068 },
-  { slug: "basavanagudi", name: "Basavanagudi", lat: 12.942, lng: 77.573 },
-  { slug: "kalyan-nagar", name: "Kalyan Nagar", lat: 13.0254, lng: 77.6408 },
-  { slug: "rt-nagar", name: "RT Nagar", lat: 13.0207, lng: 77.5945 },
+export const AREAS: {
+  slug: string;
+  name: string;
+  lat: number;
+  lng: number;
+  city: string;
+}[] = [
+  // ---- Bengaluru ----
+  { slug: "indiranagar", name: "Indiranagar", lat: 12.9719, lng: 77.6412, city: "bengaluru" },
+  { slug: "koramangala", name: "Koramangala", lat: 12.9352, lng: 77.6245, city: "bengaluru" },
+  { slug: "hsr-layout", name: "HSR Layout", lat: 12.9081, lng: 77.6476, city: "bengaluru" },
+  { slug: "whitefield", name: "Whitefield", lat: 12.9698, lng: 77.75, city: "bengaluru" },
+  { slug: "jayanagar", name: "Jayanagar", lat: 12.925, lng: 77.5938, city: "bengaluru" },
+  { slug: "jp-nagar", name: "JP Nagar", lat: 12.9063, lng: 77.5857, city: "bengaluru" },
+  { slug: "marathahalli", name: "Marathahalli", lat: 12.9591, lng: 77.6974, city: "bengaluru" },
+  { slug: "bellandur", name: "Bellandur", lat: 12.9304, lng: 77.6784, city: "bengaluru" },
+  { slug: "btm-layout", name: "BTM Layout", lat: 12.9166, lng: 77.6101, city: "bengaluru" },
+  { slug: "electronic-city", name: "Electronic City", lat: 12.8452, lng: 77.6602, city: "bengaluru" },
+  { slug: "malleshwaram", name: "Malleshwaram", lat: 13.0035, lng: 77.5647, city: "bengaluru" },
+  { slug: "rajajinagar", name: "Rajajinagar", lat: 12.9982, lng: 77.555, city: "bengaluru" },
+  { slug: "banashankari", name: "Banashankari", lat: 12.9255, lng: 77.5468, city: "bengaluru" },
+  { slug: "yelahanka", name: "Yelahanka", lat: 13.1007, lng: 77.5963, city: "bengaluru" },
+  { slug: "hebbal", name: "Hebbal", lat: 13.0358, lng: 77.597, city: "bengaluru" },
+  { slug: "sarjapur-road", name: "Sarjapur Road", lat: 12.901, lng: 77.687, city: "bengaluru" },
+  { slug: "mg-road", name: "MG Road", lat: 12.9756, lng: 77.6068, city: "bengaluru" },
+  { slug: "basavanagudi", name: "Basavanagudi", lat: 12.942, lng: 77.573, city: "bengaluru" },
+  { slug: "kalyan-nagar", name: "Kalyan Nagar", lat: 13.0254, lng: 77.6408, city: "bengaluru" },
+  { slug: "rt-nagar", name: "RT Nagar", lat: 13.0207, lng: 77.5945, city: "bengaluru" },
+
+  // ---- Mumbai ----
+  { slug: "andheri", name: "Andheri", lat: 19.1197, lng: 72.8468, city: "mumbai" },
+  { slug: "bandra", name: "Bandra", lat: 19.0596, lng: 72.8295, city: "mumbai" },
+  { slug: "powai", name: "Powai", lat: 19.1176, lng: 72.906, city: "mumbai" },
+  { slug: "juhu", name: "Juhu", lat: 19.1075, lng: 72.8263, city: "mumbai" },
+  { slug: "dadar", name: "Dadar", lat: 19.0178, lng: 72.8478, city: "mumbai" },
+  { slug: "lower-parel", name: "Lower Parel", lat: 18.996, lng: 72.8302, city: "mumbai" },
+  { slug: "colaba", name: "Colaba", lat: 18.9067, lng: 72.8147, city: "mumbai" },
+  { slug: "malad", name: "Malad", lat: 19.186, lng: 72.8484, city: "mumbai" },
+  { slug: "borivali", name: "Borivali", lat: 19.2307, lng: 72.8567, city: "mumbai" },
+  { slug: "chembur", name: "Chembur", lat: 19.062, lng: 72.9, city: "mumbai" },
+  { slug: "goregaon", name: "Goregaon", lat: 19.1663, lng: 72.8526, city: "mumbai" },
+  { slug: "thane", name: "Thane", lat: 19.2183, lng: 72.9781, city: "mumbai" },
+
+  // ---- Delhi NCR ----
+  { slug: "connaught-place", name: "Connaught Place", lat: 28.6315, lng: 77.2167, city: "delhi-ncr" },
+  { slug: "saket", name: "Saket", lat: 28.5245, lng: 77.2066, city: "delhi-ncr" },
+  { slug: "dwarka", name: "Dwarka", lat: 28.5921, lng: 77.046, city: "delhi-ncr" },
+  { slug: "rohini", name: "Rohini", lat: 28.7439, lng: 77.0728, city: "delhi-ncr" },
+  { slug: "gurugram", name: "Gurugram", lat: 28.4595, lng: 77.0266, city: "delhi-ncr" },
+  { slug: "noida", name: "Noida", lat: 28.5355, lng: 77.391, city: "delhi-ncr" },
+  { slug: "indirapuram", name: "Indirapuram", lat: 28.6412, lng: 77.3729, city: "delhi-ncr" },
+  { slug: "vasant-kunj", name: "Vasant Kunj", lat: 28.52, lng: 77.159, city: "delhi-ncr" },
+  { slug: "karol-bagh", name: "Karol Bagh", lat: 28.6512, lng: 77.1907, city: "delhi-ncr" },
+  { slug: "lajpat-nagar", name: "Lajpat Nagar", lat: 28.5677, lng: 77.2433, city: "delhi-ncr" },
+  { slug: "janakpuri", name: "Janakpuri", lat: 28.6217, lng: 77.0878, city: "delhi-ncr" },
+  { slug: "greater-noida", name: "Greater Noida", lat: 28.4744, lng: 77.504, city: "delhi-ncr" },
 ];
 
 interface SeedTrainer {

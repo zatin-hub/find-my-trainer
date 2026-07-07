@@ -14,6 +14,7 @@ export interface Area {
   name: string;
   lat: number;
   lng: number;
+  city: string;
 }
 
 export interface Trainer {

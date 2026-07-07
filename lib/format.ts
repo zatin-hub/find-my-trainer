@@ -10,6 +10,11 @@ export function formatPrice(
   return `${fmt(min || max!)}${u}`;
 }
 
+export function formatDistance(meters: number): string {
+  if (meters < 950) return `${Math.round(meters / 50) * 50} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
 export function ratingStars(avg: number | null): string {
   if (!avg) return "";
   const full = Math.round(avg);

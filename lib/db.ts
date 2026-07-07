@@ -3,8 +3,9 @@ import path from "node:path";
 import fs from "node:fs";
 import { ACTIVITIES, AREAS, TRAINERS } from "@/data/seed";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "app.db");
+// FMT_DB_PATH lets tests point at an isolated database; unset in normal use.
+const DB_PATH = process.env.FMT_DB_PATH || path.join(process.cwd(), "data", "app.db");
+const DATA_DIR = path.dirname(DB_PATH);
 
 // Singleton across hot-reloads in dev.
 declare global {
@@ -39,7 +40,8 @@ function init(): Database.Database {
       slug TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
       lat REAL NOT NULL,
-      lng REAL NOT NULL
+      lng REAL NOT NULL,
+      city TEXT NOT NULL DEFAULT 'bengaluru'
     );
 
     CREATE TABLE IF NOT EXISTS trainers (
@@ -104,6 +106,7 @@ function init(): Database.Database {
     CREATE TABLE IF NOT EXISTS rec_votes (
       recommendation_id INTEGER NOT NULL REFERENCES recommendations(id) ON DELETE CASCADE,
       anon_id TEXT NOT NULL,
+      ip_hash TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       PRIMARY KEY (recommendation_id, anon_id)
     );
@@ -140,6 +143,15 @@ function init(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS admin_audit (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      action TEXT NOT NULL,
+      target_type TEXT NOT NULL,
+      target_id INTEGER,
+      detail TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE INDEX IF NOT EXISTS idx_trainers_area ON trainers(area_id);
     CREATE INDEX IF NOT EXISTS idx_recs_trainer ON recommendations(trainer_id);
     CREATE INDEX IF NOT EXISTS idx_ta_activity ON trainer_activities(activity_id);
@@ -158,6 +170,13 @@ function migrate(db: Database.Database) {
     "ALTER TABLE trainers ADD COLUMN merged_into INTEGER",
     "ALTER TABLE recommendations ADD COLUMN reply TEXT",
     "ALTER TABLE recommendations ADD COLUMN replied_at TEXT",
+    "ALTER TABLE rec_votes ADD COLUMN ip_hash TEXT",
+    "ALTER TABLE trainers ADD COLUMN verified_at TEXT",
+    "ALTER TABLE trainers ADD COLUMN ig_exists INTEGER",
+    "ALTER TABLE trainers ADD COLUMN ig_followers INTEGER",
+    "ALTER TABLE trainers ADD COLUMN ig_checked_at TEXT",
+    "ALTER TABLE trainers ADD COLUMN custom_activity TEXT",
+    "ALTER TABLE areas ADD COLUMN city TEXT NOT NULL DEFAULT 'bengaluru'",
   ];
   for (const sql of cols) {
     try {
@@ -165,6 +184,34 @@ function migrate(db: Database.Database) {
     } catch {
       // column already exists — ignore
     }
+  }
+
+  // Idempotently ensure every seeded area exists with the right city. This
+  // backfills new-city areas (Mumbai, Delhi NCR) into databases created before
+  // multi-city support, without disturbing existing rows or trainers.
+  const insArea = db.prepare(
+    "INSERT OR IGNORE INTO areas (slug, name, lat, lng, city) VALUES (?, ?, ?, ?, ?)"
+  );
+  const setCity = db.prepare("UPDATE areas SET city = ? WHERE slug = ?");
+  const syncAreas = db.transaction(() => {
+    for (const a of AREAS) {
+      insArea.run(a.slug, a.name, a.lat, a.lng, a.city);
+      setCity.run(a.city, a.slug);
+    }
+  });
+  try {
+    syncAreas();
+  } catch {
+    // ignore — non-fatal
+  }
+  // At most one vote per recommendation per IP (anti-stuffing). Partial index
+  // excludes legacy rows with a null ip_hash. Created after the column exists.
+  try {
+    db.exec(
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_recvotes_rec_ip ON rec_votes(recommendation_id, ip_hash) WHERE ip_hash IS NOT NULL"
+    );
+  } catch {
+    // ignore
   }
 }
 
@@ -176,7 +223,7 @@ function seedIfEmpty(db: Database.Database) {
     "INSERT INTO activities (slug, name, icon) VALUES (?, ?, ?)"
   );
   const insArea = db.prepare(
-    "INSERT INTO areas (slug, name, lat, lng) VALUES (?, ?, ?, ?)"
+    "INSERT OR IGNORE INTO areas (slug, name, lat, lng, city) VALUES (?, ?, ?, ?, ?)"
   );
   const insTrainer = db.prepare(`
     INSERT INTO trainers
@@ -200,7 +247,7 @@ function seedIfEmpty(db: Database.Database) {
 
   const seed = db.transaction(() => {
     for (const a of ACTIVITIES) insActivity.run(a.slug, a.name, a.icon);
-    for (const a of AREAS) insArea.run(a.slug, a.name, a.lat, a.lng);
+    for (const a of AREAS) insArea.run(a.slug, a.name, a.lat, a.lng, a.city);
 
     const activityIdBySlug = new Map<string, number>();
     for (const row of db.prepare("SELECT id, slug FROM activities").all() as {
