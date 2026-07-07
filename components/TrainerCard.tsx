@@ -9,7 +9,7 @@ export default function TrainerCard({ trainer: t }: { trainer: Trainer }) {
         <div>
           <Link
             href={`/trainer/${t.slug}`}
-            className="font-semibold text-slate-100 hover:text-emerald-300"
+            className="font-semibold text-slate-100 hover:text-pink-300"
           >
             {t.name}
           </Link>
@@ -19,7 +19,7 @@ export default function TrainerCard({ trainer: t }: { trainer: Trainer }) {
         </div>
         <div className="shrink-0 text-right text-sm">
           {t.avg_rating ? (
-            <div className="text-amber-400">{ratingStars(t.avg_rating)}</div>
+            <div className="text-pink-400">{ratingStars(t.avg_rating)}</div>
           ) : (
             <div className="text-slate-500">No rating yet</div>
           )}

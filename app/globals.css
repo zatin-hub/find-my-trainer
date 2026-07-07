@@ -11,67 +11,143 @@ body {
 }
 
 body {
-  color: #e2e8f0;
-  background-color: #07070b;
+  color: #e8e9f2;
+  background-color: #07070c;
+  /* Soft, layered ambient light — Splunk energy (blue + magenta + orange). */
   background-image:
-    radial-gradient(60rem 60rem at 80% -10%, rgba(16, 185, 129, 0.12), transparent 60%),
-    radial-gradient(50rem 50rem at -10% 10%, rgba(20, 184, 166, 0.1), transparent 55%);
+    radial-gradient(55rem 55rem at 82% -12%, rgba(255, 42, 122, 0.18), transparent 60%),
+    radial-gradient(48rem 48rem at -8% 4%, rgba(255, 122, 40, 0.11), transparent 55%),
+    radial-gradient(58rem 58rem at -10% 104%, rgba(37, 99, 255, 0.18), transparent 60%),
+    radial-gradient(42rem 42rem at 55% 122%, rgba(255, 42, 122, 0.08), transparent 60%);
   background-attachment: fixed;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  /* Apple system fonts (SF Pro on Apple devices). */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.011em;
 }
 
-/* Reusable dark surfaces / controls */
+::selection {
+  background: rgba(255, 42, 122, 0.32);
+  color: #ffe6f1;
+}
+
 @layer components {
+  /* Lightweight surface — translucent with a hairline border, a top inner
+     highlight, and soft depth. Deliberately NO backdrop-blur: this class is
+     used dozens of times (trainer cards), so blur here would hurt scroll. */
   .card {
-    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm;
+    @apply rounded-2xl border border-white/[0.08] bg-white/[0.045];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+      0 10px 30px -14px rgba(0, 0, 0, 0.7);
   }
   .card-hover {
-    @apply transition hover:border-white/20 hover:bg-white/[0.06];
+    @apply transition duration-200 ease-out;
   }
+  .card-hover:hover {
+    @apply border-white/[0.14] bg-white/[0.07];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      0 18px 44px -16px rgba(0, 0, 0, 0.8);
+    transform: translateY(-1px);
+  }
+
+  /* True frosted glass — reserve for a FEW overlay surfaces (header, modal,
+     hero) where the blur cost is paid once, not per list item. */
+  .glass {
+    @apply border border-white/10 bg-white/[0.06];
+    backdrop-filter: blur(22px) saturate(170%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
   .input {
-    @apply w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-sm
-      text-slate-100 placeholder:text-slate-500 outline-none transition
-      focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-500/20;
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.05] px-3.5 py-2.5
+      text-sm text-slate-100 placeholder:text-slate-500 outline-none
+      transition duration-150;
   }
+  .input:focus {
+    @apply border-pink-400/50 bg-white/[0.07];
+    box-shadow: 0 0 0 3px rgba(255, 42, 122, 0.25);
+  }
+
+  /* Splunk's signature magenta → orange gradient. */
   .btn-primary {
-    @apply rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950
-      shadow-[0_0_20px_-6px_rgba(16,185,129,0.6)] transition
-      hover:bg-emerald-400 disabled:opacity-60;
+    @apply rounded-xl px-4 py-2 text-sm font-semibold text-white
+      transition duration-150 ease-out disabled:opacity-60;
+    background-image: linear-gradient(100deg, #ff2a7a 0%, #ff5c3a 55%, #ff8a2b 100%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+      0 8px 22px -8px rgba(255, 45, 120, 0.65);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08) saturate(1.05);
   }
   .btn-ghost {
-    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition
-      hover:bg-white/5;
+    @apply rounded-xl px-3 py-2 text-sm font-medium text-slate-300
+      transition duration-150 hover:bg-white/[0.06];
   }
   .btn-outline {
-    @apply rounded-lg border border-white/15 px-3 py-1.5 text-sm font-medium
-      text-slate-200 transition hover:border-emerald-400/50 hover:text-emerald-300;
+    @apply rounded-xl border border-white/[0.12] bg-white/[0.03] px-3.5 py-2
+      text-sm font-medium text-slate-200 transition duration-150
+      hover:border-pink-400/40 hover:bg-white/[0.06] hover:text-pink-200;
   }
+
   .chip {
-    @apply rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-slate-300;
+    @apply rounded-full border border-white/10 bg-white/[0.05] px-3 py-1
+      text-xs text-slate-300 transition duration-150;
   }
   .chip-accent {
-    @apply rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-0.5 text-xs text-emerald-300;
+    @apply rounded-full border border-pink-400/30 bg-pink-400/[0.15] px-3 py-1
+      text-xs font-medium text-pink-200;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   }
 }
 
-/* Scrollbar */
+/* Thin, unobtrusive scrollbars. */
 * {
-  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
 }
 
-/* MapLibre popup + controls on dark */
+/* MapLibre popup + controls on dark, matched to the glass theme. */
 .maplibregl-popup-content {
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   padding: 0.75rem 0.9rem;
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   color: #e2e8f0;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.6);
 }
 .maplibregl-ctrl-group {
-  background: rgba(15, 23, 42, 0.9) !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
 }
 .maplibregl-ctrl-group button {
   filter: invert(1);
+}
+
+/* Respect reduced-motion: drop lift transforms for users who opt out. */
+@media (prefers-reduced-motion: reduce) {
+  .card-hover:hover,
+  .btn-primary:hover {
+    transform: none;
+  }
 }

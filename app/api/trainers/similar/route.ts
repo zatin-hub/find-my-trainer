@@ -8,5 +8,5 @@ export async function GET(req: NextRequest) {
   const name = sp.get("name") || "";
   const area = sp.get("area") || undefined;
   if (name.trim().length < 2) return NextResponse.json({ matches: [] });
-  return NextResponse.json({ matches: findSimilarTrainers(name, area) });
+  return NextResponse.json({ matches: await findSimilarTrainers(name, area) });
 }

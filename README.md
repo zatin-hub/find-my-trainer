@@ -66,6 +66,22 @@ npm run dev
 On first run the local database (`data/app.db`) is created and seeded
 automatically. To reset it, delete `data/app.db*` and restart.
 
+## Tests
+
+Unit + regression tests run with **Vitest**:
+
+```bash
+npm test         # run once
+npm run test:watch
+```
+
+Coverage: geo math, formatting, rate limiting, claim hashing, and the
+`listTrainers` query layer — multi-select filter semantics (OR within a
+category, AND across), the name/area/activity free-text search, price/rating
+filters, and status visibility (hidden/merged trainers never leak). Query tests
+run against an isolated temp DB via the `FMT_DB_PATH` override, so they never
+touch `data/app.db`.
+
 > Note: in `next dev`, the *very first* page compile can occasionally log a
 > one-time error and 500 — just refresh. This is a Next.js dev-mode warm-up
 > quirk; production (`npm run build && npm run start`) serves cleanly from the
@@ -100,3 +116,56 @@ email, and duplicate detection/merge are done.)
 | `EMAIL_FROM` | From address for alerts | `alerts@findmytrainer.local` |
 | `EXPOSE_DEV_OTP` | Return claim OTP in response | `true` (set `false` in prod) |
 | `NEXT_PUBLIC_SITE_URL` | Base URL for links/sitemap | `http://localhost:3000` |
+
+## Switching the map to Google Maps
+
+Today the map uses **MapLibre GL JS** with free **OpenFreeMap** vector tiles —
+zero cost, no API key, and already dark-themed. The entire map lives in
+[`components/MapView.tsx`](./components/MapView.tsx) (the only file importing
+`maplibre-gl`), so swapping to the **Google Maps JavaScript API** is a contained
+change. Here's what it takes:
+
+**1. Google Cloud / billing (the main trade-off)**
+
+- Create a Google Cloud project with **billing enabled**. Google Maps is *not*
+  free beyond a monthly credit — "Dynamic Maps" (Maps JS) runs ~**$7 per 1,000
+  map loads** after the free tier. OpenFreeMap costs nothing, so only switch if
+  you specifically need Google's basemap, Street View, or Places.
+- Enable the **Maps JavaScript API** in that project.
+- Create an **API key** and restrict it to your HTTP referrers
+  (`localhost:3000`, your prod domain).
+- (Recommended) Create a **Map ID** with cloud-based **dark styling** so it
+  matches the theme, and to use Advanced Markers.
+
+**2. Config / env**
+
+- Add `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (and optional
+  `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`). They must be `NEXT_PUBLIC_*` because the key
+  is used in the browser.
+- Swap the dependency: remove `maplibre-gl`, add a loader such as
+  `@googlemaps/js-api-loader`.
+
+**3. Code — only `components/MapView.tsx`**
+
+- Drop `import maplibregl` + `import "maplibre-gl/dist/maplibre-gl.css"`; load the
+  Google script via the loader instead.
+- `new maplibregl.Map({...})` → `new google.maps.Map(el, { center: {lat,lng},
+  zoom, mapId })`. **Note:** Google uses `{lat, lng}` objects, *not* `[lng, lat]`
+  arrays — every coordinate flips.
+- Custom emoji pins → `google.maps.marker.AdvancedMarkerElement` (the existing
+  emoji-button HTML can be reused as the marker `content`).
+- `map.flyTo({center, zoom})` → `map.panTo({lat, lng})` + `map.setZoom(...)`.
+- Remove the OpenFreeMap style URL + demo-tiles fallback; Google handles tiles,
+  and the dark theme comes from the Map ID's cloud style.
+- The component's props (`trainers`, `selectedSlug`, `onSelect`) stay the same, so
+  nothing else needs to change. It already renders client-side via
+  `dynamic(..., { ssr: false })`, which Google requires.
+
+**4. Cleanup & constraints**
+
+- Remove the `.maplibregl-*` rules in [`app/globals.css`](./app/globals.css);
+  Google injects its own controls.
+- Google's logo and Terms-of-Service attribution **cannot** be removed.
+
+> Safest path if you want both: load Google when a key is set, otherwise fall
+> back to the current MapLibre map.

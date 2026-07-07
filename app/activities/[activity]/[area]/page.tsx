@@ -16,8 +16,10 @@ export async function generateMetadata({
   params: Promise<{ activity: string; area: string }>;
 }): Promise<Metadata> {
   const { activity, area } = await params;
-  const a = getActivityBySlug(activity);
-  const ar = getAreaBySlug(area);
+  const [a, ar] = await Promise.all([
+    getActivityBySlug(activity),
+    getAreaBySlug(area),
+  ]);
   if (!a || !ar) return { title: "Not found" };
   return {
     title: `${a.name} trainers in ${ar.name}, Bengaluru — recommendations`,
@@ -31,22 +33,24 @@ export default async function ActivityAreaPage({
   params: Promise<{ activity: string; area: string }>;
 }) {
   const { activity, area } = await params;
-  const a = getActivityBySlug(activity);
-  const ar = getAreaBySlug(area);
+  const [a, ar] = await Promise.all([
+    getActivityBySlug(activity),
+    getAreaBySlug(area),
+  ]);
   if (!a || !ar) notFound();
 
-  const trainers = listTrainers({ activity, area });
+  const trainers = await listTrainers({ activity, area });
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <nav className="text-sm text-slate-400">
-        <Link href="/activities" className="text-emerald-400 hover:underline">
+        <Link href="/activities" className="text-pink-400 hover:underline">
           Browse
         </Link>{" "}
         /{" "}
         <Link
           href={`/activities/${a.slug}`}
-          className="text-emerald-400 hover:underline"
+          className="text-pink-400 hover:underline"
         >
           {a.name}
         </Link>{" "}
@@ -67,7 +71,7 @@ export default async function ActivityAreaPage({
         {trainers.length === 0 && (
           <li className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
             No {a.name.toLowerCase()} trainers in {ar.name} yet.{" "}
-            <Link href="/add" className="font-medium text-emerald-400 underline">
+            <Link href="/add" className="font-medium text-pink-400 underline">
               Recommend one
             </Link>
             .

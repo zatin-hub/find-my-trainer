@@ -5,7 +5,7 @@ import type { Recommendation } from "@/lib/types";
 
 function Stars({ n }: { n: number }) {
   return (
-    <span className="text-amber-400">
+    <span className="text-pink-400">
       {"★".repeat(n)}
       <span className="text-slate-600">{"★".repeat(Math.max(0, 5 - n))}</span>
     </span>
@@ -94,7 +94,7 @@ function RecCard({
           disabled={busy}
           className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 transition ${
             voted
-              ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+              ? "border-pink-400/40 bg-pink-400/10 text-pink-300"
               : "border-white/15 text-slate-400 hover:border-white/30"
           }`}
         >
@@ -111,15 +111,15 @@ function RecCard({
 
       {/* Owner reply, visible to everyone */}
       {savedReply && !editingReply && (
-        <div className="mt-3 rounded-lg border-l-2 border-emerald-400/60 bg-emerald-400/[0.07] p-3 text-sm">
-          <div className="mb-0.5 text-xs font-medium text-emerald-300">
+        <div className="mt-3 rounded-lg border-l-2 border-pink-400/60 bg-pink-400/[0.07] p-3 text-sm">
+          <div className="mb-0.5 text-xs font-medium text-pink-300">
             Reply from trainer
           </div>
           <p className="text-slate-300">{savedReply}</p>
           {isOwner && (
             <button
               onClick={() => setEditingReply(true)}
-              className="mt-1 text-xs text-emerald-400 hover:underline"
+              className="mt-1 text-xs text-pink-400 hover:underline"
             >
               Edit reply
             </button>
@@ -132,7 +132,7 @@ function RecCard({
           {!editingReply && !savedReply ? (
             <button
               onClick={() => setEditingReply(true)}
-              className="text-xs font-medium text-emerald-400 hover:underline"
+              className="text-xs font-medium text-pink-400 hover:underline"
             >
               + Reply as the trainer
             </button>
@@ -149,7 +149,7 @@ function RecCard({
                 <button
                   onClick={saveReply}
                   disabled={busy}
-                  className="rounded-md bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 disabled:opacity-50"
+                  className="rounded-md bg-pink-500 px-3 py-1 text-xs font-semibold text-slate-950 disabled:opacity-50"
                 >
                   Save reply
                 </button>

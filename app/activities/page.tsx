@@ -10,12 +10,11 @@ export const metadata: Metadata = {
     "Find crowdsourced, honestly-rated fitness trainers across Bengaluru — gym, yoga, Zumba, swimming, boxing and more, by neighbourhood.",
 };
 
-export default function ActivitiesIndex() {
-  const activities = getActivities();
-  const areas = getAreas();
+export default async function ActivitiesIndex() {
+  const [activities, areas] = await Promise.all([getActivities(), getAreas()]);
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <Link href="/" className="text-sm text-emerald-400 hover:underline">
+      <Link href="/" className="text-sm text-pink-400 hover:underline">
         ← Back to map
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-white">
@@ -34,7 +33,7 @@ export default function ActivitiesIndex() {
           <Link
             key={a.id}
             href={`/activities/${a.slug}`}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:border-emerald-400/50 hover:text-emerald-300"
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:border-pink-400/50 hover:text-pink-300"
           >
             {a.icon} {a.name}
           </Link>
@@ -47,7 +46,7 @@ export default function ActivitiesIndex() {
           <Link
             key={ar.id}
             href={`/?area=${ar.slug}`}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:border-emerald-400/50 hover:text-emerald-300"
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:border-pink-400/50 hover:text-pink-300"
           >
             {ar.name}
           </Link>

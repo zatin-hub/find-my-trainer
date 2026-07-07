@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { db } from "@/lib/database";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
-  const db = getDb();
+  const d = await db();
 
-  const rl = rateLimit(`seeker:${clientIp(req)}`, 5, 60_000);
+  const rl = await rateLimit(`seeker:${clientIp(req)}`, 5, 60_000);
   if (!rl.ok)
     return NextResponse.json(
       { error: "Too many submissions. Please slow down." },
@@ -27,28 +27,30 @@ export async function POST(req: NextRequest) {
 
   const activityId = body.activity
     ? (
-        db
-          .prepare("SELECT id FROM activities WHERE slug = ?")
-          .get(String(body.activity)) as { id: number } | undefined
+        await d.get<{ id: number }>(
+          "SELECT id FROM activities WHERE slug = ?",
+          [String(body.activity)]
+        )
       )?.id ?? null
     : null;
   const areaId = body.area
     ? (
-        db
-          .prepare("SELECT id FROM areas WHERE slug = ?")
-          .get(String(body.area)) as { id: number } | undefined
+        await d.get<{ id: number }>("SELECT id FROM areas WHERE slug = ?", [
+          String(body.area),
+        ])
       )?.id ?? null
     : null;
 
-  db.prepare(
+  await d.run(
     `INSERT INTO seeker_pins (email, activity_id, area_id, radius_m, budget_max)
-     VALUES (?,?,?,?,?)`
-  ).run(
-    email,
-    activityId,
-    areaId,
-    body.radius_m ? Number(body.radius_m) : 3000,
-    body.budget_max ? Number(body.budget_max) : null
+     VALUES (?,?,?,?,?)`,
+    [
+      email,
+      activityId,
+      areaId,
+      body.radius_m ? Number(body.radius_m) : 3000,
+      body.budget_max ? Number(body.budget_max) : null,
+    ]
   );
 
   // In production this triggers a double opt-in email + cron matching.

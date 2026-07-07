@@ -1,53 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { db } from "@/lib/database";
 import { getAnonId, setAnonCookie } from "@/lib/anon";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
+import { applyVote, hashIp } from "@/lib/votes";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rl = await rateLimit(`vote:${clientIp(req)}`, 30, 60_000);
+  if (!rl.ok)
+    return NextResponse.json({ error: "Too many votes" }, { status: 429 });
+
   const { id } = await params;
   const recId = Number(id);
   if (!Number.isInteger(recId))
     return NextResponse.json({ error: "Bad id" }, { status: 400 });
 
-  const db = getDb();
-  const rec = db
-    .prepare("SELECT id FROM recommendations WHERE id = ?")
-    .get(recId);
-  if (!rec)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const rec = await (await db()).get("SELECT id FROM recommendations WHERE id = ?", [
+    recId,
+  ]);
+  if (!rec) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const anonId = await getAnonId();
+  const { voted, count } = await applyVote(recId, anonId, hashIp(clientIp(req)));
 
-  // One vote per anonymous visitor; toggle off if they vote again.
-  const existing = db
-    .prepare("SELECT 1 FROM rec_votes WHERE recommendation_id = ? AND anon_id = ?")
-    .get(recId, anonId);
-
-  let voted: boolean;
-  if (existing) {
-    db.prepare(
-      "DELETE FROM rec_votes WHERE recommendation_id = ? AND anon_id = ?"
-    ).run(recId, anonId);
-    voted = false;
-  } else {
-    db.prepare(
-      "INSERT OR IGNORE INTO rec_votes (recommendation_id, anon_id) VALUES (?, ?)"
-    ).run(recId, anonId);
-    voted = true;
-  }
-
-  const { count } = db
-    .prepare("SELECT COUNT(*) AS count FROM rec_votes WHERE recommendation_id = ?")
-    .get(recId) as { count: number };
-  db.prepare("UPDATE recommendations SET helpful_count = ? WHERE id = ?").run(
-    count,
-    recId
-  );
-
-  return setAnonCookie(
-    NextResponse.json({ ok: true, voted, count }),
-    anonId
-  );
+  return setAnonCookie(NextResponse.json({ ok: true, voted, count }), anonId);
 }

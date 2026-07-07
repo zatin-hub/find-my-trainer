@@ -5,10 +5,12 @@ const BASE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const dynamic = "force-dynamic";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const activities = getActivities();
-  const areas = getAreas();
-  const trainers = listTrainers();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [activities, areas, trainers] = await Promise.all([
+    getActivities(),
+    getAreas(),
+    listTrainers(),
+  ]);
 
   const urls: MetadataRoute.Sitemap = [
     { url: `${BASE}/`, priority: 1 },

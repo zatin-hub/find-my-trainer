@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import CitySwitcher from "@/components/CitySwitcher";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,23 +16,31 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen text-slate-200 antialiased">
-        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07070b]/80 backdrop-blur-md">
+        <header className="glass sticky top-0 z-50 rounded-none border-x-0 border-t-0 border-b border-white/10">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 font-bold">
-              <span className="text-xl">📍</span>
-              <span className="text-lg tracking-tight text-white">
-                find<span className="text-emerald-400">my</span>trainer
-              </span>
-              <span className="ml-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-slate-400">
-                Bengaluru
-              </span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2 font-bold">
+                <span className="text-xl">📍</span>
+                <span className="text-lg tracking-tight text-white">
+                  find<span className="text-pink-400">my</span>trainer
+                </span>
+              </Link>
+              <Suspense
+                fallback={
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-slate-400">
+                    Bengaluru
+                  </span>
+                }
+              >
+                <CitySwitcher />
+              </Suspense>
+            </div>
             <nav className="flex items-center gap-2 text-sm font-medium">
-              <Link href="/activities" className="btn-ghost">
-                Browse
+              <Link href="/alert" className="btn-outline">
+                🔔 Get a match alert
               </Link>
               <Link href="/add" className="btn-primary">
-                + Recommend a trainer
+                Recommend a trainer
               </Link>
             </nav>
           </div>

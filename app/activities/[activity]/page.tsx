@@ -16,7 +16,7 @@ export async function generateMetadata({
   params: Promise<{ activity: string }>;
 }): Promise<Metadata> {
   const { activity } = await params;
-  const a = getActivityBySlug(activity);
+  const a = await getActivityBySlug(activity);
   if (!a) return { title: "Not found" };
   return {
     title: `${a.name} trainers in Bengaluru — crowdsourced recommendations`,
@@ -30,11 +30,13 @@ export default async function ActivityPage({
   params: Promise<{ activity: string }>;
 }) {
   const { activity } = await params;
-  const a = getActivityBySlug(activity);
+  const a = await getActivityBySlug(activity);
   if (!a) notFound();
 
-  const trainers = listTrainers({ activity });
-  const areas = getAreas();
+  const [trainers, areas] = await Promise.all([
+    listTrainers({ activity }),
+    getAreas(),
+  ]);
   // Only show areas that actually have trainers for this activity.
   const areasWithCount = areas
     .map((ar) => ({
@@ -46,7 +48,7 @@ export default async function ActivityPage({
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <nav className="text-sm text-slate-400">
-        <Link href="/activities" className="text-emerald-400 hover:underline">
+        <Link href="/activities" className="text-pink-400 hover:underline">
           Browse
         </Link>{" "}
         / {a.name}
@@ -65,7 +67,7 @@ export default async function ActivityPage({
             <Link
               key={ar.id}
               href={`/activities/${a.slug}/${ar.slug}`}
-              className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm text-slate-300 transition hover:border-emerald-400/50 hover:text-emerald-300"
+              className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm text-slate-300 transition hover:border-pink-400/50 hover:text-pink-300"
             >
               {ar.name} ({ar.count})
             </Link>
@@ -80,7 +82,7 @@ export default async function ActivityPage({
         {trainers.length === 0 && (
           <li className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
             No {a.name.toLowerCase()} trainers yet.{" "}
-            <Link href="/add" className="font-medium text-emerald-400 underline">
+            <Link href="/add" className="font-medium text-pink-400 underline">
               Recommend one
             </Link>
             .

@@ -8,7 +8,7 @@ import {
   getVotedRecIds,
 } from "@/lib/queries";
 import { formatPrice, ratingStars } from "@/lib/format";
-import { isOwner } from "@/lib/claim";
+import { isOwner, claimsEnabled } from "@/lib/claim";
 import RecommendForm from "@/components/RecommendForm";
 import RecommendationList from "@/components/RecommendationList";
 import ClaimFlow from "@/components/ClaimFlow";
@@ -23,16 +23,16 @@ export default async function TrainerPage({
 }) {
   const { slug } = await params;
   // If this trainer was merged into another, redirect to the canonical profile.
-  const mergedTarget = getMergedTargetSlug(slug);
+  const mergedTarget = await getMergedTargetSlug(slug);
   if (mergedTarget) redirect(`/trainer/${mergedTarget}`);
 
-  const trainer = getTrainerBySlug(slug);
+  const trainer = await getTrainerBySlug(slug);
   if (!trainer) notFound();
 
-  const recs = getRecommendations(trainer.id);
+  const recs = await getRecommendations(trainer.id);
   const owner = await isOwner(trainer.id);
   const anonId = (await cookies()).get("anon_id")?.value;
-  const votedIds = getVotedRecIds(
+  const votedIds = await getVotedRecIds(
     anonId,
     recs.map((r) => r.id)
   );
@@ -46,7 +46,7 @@ export default async function TrainerPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
-      <Link href="/" className="text-sm text-emerald-400 hover:underline">
+      <Link href="/" className="text-sm text-pink-400 hover:underline">
         ← Back to map
       </Link>
 
@@ -66,7 +66,7 @@ export default async function TrainerPage({
           </div>
           <div className="text-right">
             {trainer.avg_rating ? (
-              <div className="text-lg text-amber-400">
+              <div className="text-lg text-pink-400">
                 {ratingStars(trainer.avg_rating)}
               </div>
             ) : (
@@ -98,10 +98,10 @@ export default async function TrainerPage({
         </div>
 
         {avgPaid && (
-          <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
+          <div className="mt-4 rounded-xl border border-pink-400/20 bg-pink-400/10 px-4 py-3 text-sm text-pink-200">
             💸 Real average paid by people here:{" "}
             <strong>₹{avgPaid.toLocaleString("en-IN")}</strong>{" "}
-            <span className="text-amber-300/80">
+            <span className="text-pink-300/80">
               (from {prices.length} recommendation{prices.length === 1 ? "" : "s"})
             </span>
           </div>
@@ -114,7 +114,7 @@ export default async function TrainerPage({
               href={`https://instagram.com/${trainer.contact_instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-400 hover:underline"
+              className="text-pink-400 hover:underline"
             >
               @{trainer.contact_instagram}
             </a>
@@ -125,7 +125,7 @@ export default async function TrainerPage({
             Phone:{" "}
             <a
               href={`tel:${trainer.contact_phone}`}
-              className="text-emerald-400 hover:underline"
+              className="text-pink-400 hover:underline"
             >
               {trainer.contact_phone}
             </a>
@@ -139,18 +139,20 @@ export default async function TrainerPage({
         )}
 
         {/* Ownership controls */}
-        <div className="mt-4 border-t border-white/10 pt-4">
-          {owner ? (
-            <div>
-              <p className="mb-2 text-sm font-medium text-emerald-400">
-                ✓ You manage this profile
-              </p>
-              <EditProfile trainer={trainer} />
-            </div>
-          ) : (
-            <ClaimFlow trainerSlug={trainer.slug} />
-          )}
-        </div>
+        {(owner || claimsEnabled()) && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            {owner ? (
+              <div>
+                <p className="mb-2 text-sm font-medium text-pink-400">
+                  ✓ You manage this profile
+                </p>
+                <EditProfile trainer={trainer} />
+              </div>
+            ) : (
+              <ClaimFlow trainerSlug={trainer.slug} />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Recommendations */}

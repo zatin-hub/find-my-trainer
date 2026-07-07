@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { db } from "@/lib/database";
 import { getAnonId, setAnonCookie } from "@/lib/anon";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 const VALID_TARGETS = new Set(["trainer", "recommendation"]);
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`reports:${clientIp(req)}`, 10, 60_000);
+  const rl = await rateLimit(`reports:${clientIp(req)}`, 10, 60_000);
   if (!rl.ok)
     return NextResponse.json(
       { error: "Too many reports. Please slow down." },
@@ -26,11 +26,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad target" }, { status: 400 });
 
   const anonId = await getAnonId();
-  getDb()
-    .prepare(
-      "INSERT INTO reports (target_type, target_id, reason, anon_id) VALUES (?,?,?,?)"
-    )
-    .run(targetType, targetId, body.reason ? String(body.reason) : null, anonId);
+  await (await db()).run(
+    "INSERT INTO reports (target_type, target_id, reason, anon_id) VALUES (?,?,?,?)",
+    [
+      targetType,
+      targetId,
+      body.reason ? String(body.reason).slice(0, 500) : null,
+      anonId,
+    ]
+  );
 
   return setAnonCookie(NextResponse.json({ ok: true }), anonId);
 }
