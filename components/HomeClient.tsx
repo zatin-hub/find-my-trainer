@@ -110,16 +110,31 @@ export default function HomeClient({
     setOpen(null);
     setSelected(null);
   };
+
+  // Full-page map (lg only): map goes fixed-fullscreen, detail panel floats
+  // on top of it. Esc closes the panel first, then exits the full map.
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
-    if (!open) return;
-    // On mobile the panel sits below the map — bring it into view on open.
-    if (window.innerWidth < 1024)
-      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.body.style.overflow = expanded ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [expanded]);
+  useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeDetail();
+      if (e.key !== "Escape") return;
+      if (open) closeDetail();
+      else setExpanded(false);
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  useEffect(() => {
+    if (!open || expanded) return;
+    // On mobile the panel sits below the map — bring it into view on open.
+    if (window.innerWidth < 1024)
+      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -211,23 +226,26 @@ export default function HomeClient({
         Trainers your neighbours actually rate.
       </h1>
 
-      {/* Search bars, each sized to the section below it */}
-      <div className="mb-4 grid items-start gap-5 lg:grid-cols-[1fr_440px] lg:gap-6">
+      {/* One grid so each search bar stays attached to its section on mobile
+          (location → map, trainer search → list); two columns on lg. */}
+      <div className="grid items-start gap-4 lg:grid-cols-[1fr_440px] lg:gap-x-6">
         {/* Above the map: area search */}
-        <LocationSearch
-          areas={areasInCity}
-          city={city}
-          cityName={getCity(city).name}
-          activeLabel={near?.label ?? null}
-          onPick={(p) => {
-            setNear({ lat: p.lat, lng: p.lng, label: p.label });
-            setSelected(null);
-          }}
-          onClear={() => setNear(null)}
-        />
+        <div className="order-1 lg:order-none">
+          <LocationSearch
+            areas={areasInCity}
+            city={city}
+            cityName={getCity(city).name}
+            activeLabel={near?.label ?? null}
+            onPick={(p) => {
+              setNear({ lat: p.lat, lng: p.lng, label: p.label });
+              setSelected(null);
+            }}
+            onClear={() => setNear(null)}
+          />
+        </div>
 
         {/* Above the trainer list: name/attribute search + filters */}
-        <div className="lg:pl-6">
+        <div className="order-3 lg:order-none lg:pl-6">
           <div className="flex items-center gap-2">
             <input
               value={q}
@@ -261,9 +279,8 @@ export default function HomeClient({
             </p>
           )}
         </div>
-      </div>
 
-      {/* Trainer-filter modal */}
+      {/* Trainer-filter modal (fixed — takes no grid slot) */}
       {filtersOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
@@ -328,9 +345,14 @@ export default function HomeClient({
         </div>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_440px] lg:gap-6">
-        {/* Map — first on mobile (it's the product); list beside it on lg. */}
-        <div className="order-1 h-[360px] overflow-hidden rounded-2xl border border-white/10 lg:h-[640px]">
+        {/* Map — attached to its search bar on mobile; expandable on lg */}
+        <div
+          className={
+            expanded
+              ? "fixed inset-0 z-[60] bg-slate-950"
+              : "relative order-2 h-[360px] overflow-hidden rounded-2xl border border-white/10 lg:order-none lg:h-[640px]"
+          }
+        >
           <MapView
             trainers={trainers}
             selectedSlug={selected}
@@ -343,6 +365,18 @@ export default function HomeClient({
             focus={near}
             styleUrl={mapStyleUrl}
           />
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            className="absolute left-3 top-3 z-10 hidden items-center gap-1.5 rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm font-medium text-slate-200 backdrop-blur transition hover:border-pink-400/40 hover:text-pink-200 lg:flex"
+          >
+            {expanded ? <>✕ Exit full map</> : <>⛶ Full map</>}
+          </button>
+          {expanded && openTrainer && (
+            <div className="absolute right-4 top-4 z-10 max-h-[calc(100vh-2rem)] w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-3 backdrop-blur-md">
+              <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
+            </div>
+          )}
         </div>
 
         {/* List */}
@@ -350,7 +384,7 @@ export default function HomeClient({
           ref={listRef}
           onScroll={updateFade}
           style={fadeMask ? { maskImage: fadeMask, WebkitMaskImage: fadeMask } : undefined}
-          className="order-2 lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
+          className="order-4 lg:order-none lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
         >
           {openTrainer ? (
             <TrainerDetail trainer={openTrainer} onBack={closeDetail} />

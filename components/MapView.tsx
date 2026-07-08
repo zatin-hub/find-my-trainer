@@ -115,9 +115,13 @@ export default function MapView({
       }
     });
     mapRef.current = map;
+    // Follow container size changes (e.g. the full-map toggle).
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(containerRef.current);
     // Debug handle for headless inspection (harmless in prod).
     (window as unknown as { __fmtMap?: unknown }).__fmtMap = map;
     return () => {
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
     };
