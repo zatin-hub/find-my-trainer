@@ -219,6 +219,36 @@ export default function HomeClient({
     return () => clearInterval(id);
   }, [q]);
 
+  // Trainer search + Filters row — shared by the list column toolbar and the
+  // expanded-map right panel.
+  const trainerSearchRow = (
+    <div className="flex items-center gap-2">
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder={SEARCH_PLACEHOLDERS[phIdx]}
+        className="input flex-1"
+      />
+      <button
+        type="button"
+        onClick={() => setFiltersOpen((o) => !o)}
+        aria-expanded={filtersOpen}
+        className="btn-outline flex shrink-0 items-center gap-2 whitespace-nowrap"
+      >
+        <span aria-hidden>⚙️</span>
+        Filters
+        {activeCount > 0 && (
+          <span className="rounded-full bg-pink-500 px-1.5 py-0.5 text-xs font-semibold leading-none text-slate-950">
+            {activeCount}
+          </span>
+        )}
+        <span aria-hidden className="text-xs text-slate-500">
+          {filtersOpen ? "▲" : "▼"}
+        </span>
+      </button>
+    </div>
+  );
+
   // Shared list/detail body — rendered in the side column normally, and in
   // the floating right panel when the map is expanded (lg only).
   const listBody = openTrainer ? (
@@ -357,31 +387,7 @@ export default function HomeClient({
 
         {/* Above the trainer list: name/attribute search + filters */}
         <div className="order-3 lg:order-none lg:pl-6">
-          <div className="flex items-center gap-2">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={SEARCH_PLACEHOLDERS[phIdx]}
-              className="input flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((o) => !o)}
-              aria-expanded={filtersOpen}
-              className="btn-outline flex shrink-0 items-center gap-2 whitespace-nowrap"
-            >
-              <span aria-hidden>⚙️</span>
-              Filters
-              {activeCount > 0 && (
-                <span className="rounded-full bg-pink-500 px-1.5 py-0.5 text-xs font-semibold leading-none text-slate-950">
-                  {activeCount}
-                </span>
-              )}
-              <span aria-hidden className="text-xs text-slate-500">
-                {filtersOpen ? "▲" : "▼"}
-              </span>
-            </button>
-          </div>
+          {trainerSearchRow}
           {!filtersOpen && (
             <p className="mt-1 text-xs text-slate-500">
               {activeCount > 0
@@ -516,10 +522,11 @@ export default function HomeClient({
               </div>
             )}
           </div>
-          {/* Right: trainer list / detail panel, same behaviour as the column */}
+          {/* Right: trainer search + list / detail panel, same as the column */}
           {expanded && (
-            <div className="absolute bottom-12 right-3 top-3 z-10 hidden w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-4 shadow-lg backdrop-blur-md lg:block">
-              {listBody}
+            <div className="absolute bottom-12 right-3 top-3 z-10 hidden w-[400px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-white/10 bg-slate-950/85 p-4 shadow-lg backdrop-blur-md lg:flex">
+              <div className="mb-3 shrink-0">{trainerSearchRow}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto">{listBody}</div>
             </div>
           )}
           {expanded && (
