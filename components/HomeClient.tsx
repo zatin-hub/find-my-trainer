@@ -349,7 +349,8 @@ export default function HomeClient({
         <div
           className={
             expanded
-              ? "fixed inset-0 z-[60] bg-slate-950"
+              ? // Below the sticky header (z-50) so the brand bar stays visible.
+                "fixed inset-x-0 bottom-0 top-[63px] z-40 bg-slate-950"
               : "relative order-2 h-[360px] overflow-hidden rounded-2xl border border-white/10 lg:order-none lg:h-[640px]"
           }
         >
@@ -373,8 +374,35 @@ export default function HomeClient({
             {expanded ? <>✕ Exit full map</> : <>⛶ Full map</>}
           </button>
           {expanded && openTrainer && (
-            <div className="absolute right-4 top-4 z-10 max-h-[calc(100vh-2rem)] w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-3 backdrop-blur-md">
+            <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-5rem)] w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-3 backdrop-blur-md">
               <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
+            </div>
+          )}
+          {expanded && (
+            <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-2 border-t border-white/10 bg-slate-950/80 px-4 py-2 text-xs text-slate-400 backdrop-blur">
+              <span className="font-semibold text-slate-200">
+                📍 find<span className="text-pink-400">my</span>trainer
+              </span>
+              <span aria-hidden>·</span>
+              <a href="/privacy" className="underline hover:text-slate-200">
+                Privacy
+              </a>
+              <span aria-hidden>·</span>
+              <a href="/terms" className="underline hover:text-slate-200">
+                Terms
+              </a>
+              <span aria-hidden>·</span>
+              <span>
+                Map data ©{" "}
+                <a
+                  href="https://www.openstreetmap.org/copyright"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-slate-200"
+                >
+                  OpenStreetMap contributors
+                </a>
+              </span>
             </div>
           )}
         </div>
