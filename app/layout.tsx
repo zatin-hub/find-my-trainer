@@ -16,7 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen text-slate-200 antialiased">
-        <header className="glass sticky top-0 z-50 rounded-none border-x-0 border-t-0 border-b border-white/10">
+        {/* Near-opaque: content scrolling underneath must not bleed through. */}
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0812]/95 backdrop-blur-xl">
           <div className="flex w-full items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-5">
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-1.5 font-bold md:gap-2">
