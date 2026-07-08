@@ -49,6 +49,15 @@ export default function RootLayout({
         <footer className="mt-12 border-t border-white/10 py-8 text-center text-xs text-slate-500">
           <p>Free &amp; crowdsourced. We never sell your data or your number.</p>
           <p className="mt-1">
+            <a href="/privacy" className="underline hover:text-slate-300">
+              Privacy Policy
+            </a>{" "}
+            ·{" "}
+            <a href="/terms" className="underline hover:text-slate-300">
+              Terms of Use
+            </a>
+          </p>
+          <p className="mt-1">
             Map data ©{" "}
             <a
               href="https://www.openstreetmap.org/copyright"

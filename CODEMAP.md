@@ -27,6 +27,8 @@
 - `admin.ts` — admin key/cookie auth, constant-time. `isAdmin`, `checkAdminKey`, `adminToken`
 - `anon.ts` — anonymous visitor id cookie. `getAnonId`, `setAnonCookie`
 - `claim.ts` — claim-flow gating + OTP hash. `claimsEnabled`, `isOwner`, `hashOtp`
+- `unsubscribe.ts` — HMAC one-click alert unsubscribe (no email in URL) + pin
+  delete. `unsubscribeUrl`, `verifyUnsubscribeSig`, `deleteSeekerPin`
 - `geo.ts` — haversine. `distanceMeters` · `format.ts` — price/distance/stars display
 
 ## app/api/ (validate → rate-limit → lib call)
@@ -35,6 +37,8 @@
 - `recommendations` (+`[id]/vote`) — add rec / toggle vote
 - `geocode` — proxy for lib/geocode (rate-limited; `?q=` or `?lat&lng`)
 - `seeker-pins` — match-alert signup · `reports` — flag content
+- `unsubscribe` — GET confirm page / POST delete (mail scanners must not
+  trigger deletes), HMAC-verified, rate-limited
 - `admin/login|moderate` — auth; moderate = approve/hide/delete/merge/verify/IG-check/map provider+style + audit log
 - `claims/start|verify` — OTP claim (gated off in prod)
 
@@ -44,6 +48,8 @@
 - `admin/` — sidebar IA: layout.tsx (auth gate + nav w/ badges), pages: overview,
   trainers, recommendations, reports, alerts, map (provider+usage), audit
 - `activities` (+`[activity]`, `[activity]/[area]`) — SEO browse pages · `sitemap.ts`, `robots.ts`
+- `privacy` · `terms` — DPDP notice + terms (grievance contact is a
+  placeholder — see tasks/todo.md launch blockers)
 
 ## components/
 - `HomeClient` — home state hub: filters, search, city scoping, list+map, scroll fade
@@ -60,5 +66,5 @@
   bright + gap-filling POI names; dark + POI dots/names, park greens, navy
   water. Regenerate: `node scripts/build-map-styles.mjs`
 - `migrations/` — D1 SQL (remote); local equivalent lives in db.ts `migrate()`
-- `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (14 files)
+- `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (15 files)
 - `wrangler.toml` — Workers config: D1/KV bindings, observability, vars

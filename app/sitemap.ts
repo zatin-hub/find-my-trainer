@@ -16,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/`, priority: 1 },
     { url: `${BASE}/activities`, priority: 0.8 },
     { url: `${BASE}/add`, priority: 0.5 },
+    { url: `${BASE}/privacy`, priority: 0.3 },
+    { url: `${BASE}/terms`, priority: 0.3 },
   ];
 
   for (const a of activities) {

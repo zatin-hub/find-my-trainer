@@ -1,6 +1,7 @@
 import { db } from "@/lib/database";
 import { distanceMeters } from "@/lib/geo";
 import { sendEmail } from "@/lib/notify";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -80,7 +81,7 @@ export async function notifyMatchingSeekers(trainerId: number): Promise<number> 
     const ok = await sendEmail({
       to: pin.email,
       subject: `New trainer match: ${trainer.name}`,
-      text: `A trainer matching your alert was just added on findmytrainer.\n\n${trainer.name}\n${BASE}/trainer/${trainer.slug}\n\nYou're receiving this because you set up an alert. Reply to unsubscribe (stub).`,
+      text: `A trainer matching your alert was just added on findmytrainer.\n\n${trainer.name}\n${BASE}/trainer/${trainer.slug}\n\nYou're receiving this because you set up a match alert.\nUnsubscribe (one click): ${unsubscribeUrl(BASE, pin.id, pin.email)}\nPrivacy policy: ${BASE}/privacy`,
     });
     if (ok) {
       await d.run(
