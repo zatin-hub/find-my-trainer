@@ -219,6 +219,117 @@ export default function HomeClient({
     return () => clearInterval(id);
   }, [q]);
 
+  // Shared list/detail body — rendered in the side column normally, and in
+  // the floating right panel when the map is expanded (lg only).
+  const listBody = openTrainer ? (
+    <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
+  ) : (
+    <>
+      <div className="mb-2 flex items-center justify-between text-sm text-slate-400">
+        <span>
+          {loading ? "Loading…" : `${trainers.length} trainer${trainers.length === 1 ? "" : "s"}`}
+          {near && !loading && ` · closest to ${near.label}`}
+        </span>
+      </div>
+      <ul className="space-y-3">
+        {displayed.map(({ t, dist }) => (
+          <li key={t.id} onMouseEnter={() => setSelected(t.slug)}>
+            <Link
+              href={`/trainer/${t.slug}`}
+              className={`card block p-4 transition ${
+                selectedTrainer?.slug === t.slug
+                  ? "border-pink-400/60 ring-2 ring-pink-500/30"
+                  : "card-hover"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate font-semibold text-slate-100">
+                      {t.name}
+                    </span>
+                    {t.verified && (
+                      <span
+                        title="Verified — claimed by the trainer"
+                        className="shrink-0 text-pink-400"
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-0.5 text-sm text-slate-400">
+                    {t.area_name} · {t.activities.map((a) => a.name).join(", ")}
+                  </div>
+                  {dist != null && (
+                    <div className="mt-0.5 text-xs text-pink-400/80">
+                      ~{formatDistance(dist)} from {near?.label}
+                    </div>
+                  )}
+                </div>
+                <div className="shrink-0 text-right text-sm">
+                  {t.avg_rating ? (
+                    <div className="text-pink-400">{ratingStars(t.avg_rating)}</div>
+                  ) : (
+                    <div className="text-slate-500">No rating yet</div>
+                  )}
+                  <div className="text-xs text-slate-500">
+                    {t.rec_count} rec{t.rec_count === 1 ? "" : "s"}
+                  </div>
+                </div>
+              </div>
+              {t.bio && (
+                <p className="mt-2 line-clamp-2 text-sm text-slate-400">
+                  {t.bio}
+                </p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                <span className="chip">
+                  {formatPrice(t.price_min, t.price_max, t.price_unit)}
+                </span>
+                {t.modes.map((m) => (
+                  <span key={m} className="chip-accent">
+                    {m.replace("_", " ")}
+                  </span>
+                ))}
+                {/* Card is one big <Link>; a nested <a> is invalid HTML. */}
+                <button
+                  type="button"
+                  className="chip ml-auto cursor-pointer hover:border-pink-400/50 hover:text-pink-200"
+                  title="Open directions in Google Maps"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(
+                      `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`,
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
+                  }}
+                >
+                  Directions ↗
+                </button>
+              </div>
+              {t.languages.length > 0 && (
+                <div className="mt-2 text-xs text-slate-500">
+                  🗣 {t.languages.join(", ")}
+                </div>
+              )}
+            </Link>
+          </li>
+        ))}
+        {!loading && trainers.length === 0 && (
+          <li className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
+            No trainers match these filters yet.{" "}
+            <Link href="/add" className="font-medium text-pink-400 underline">
+              Recommend one
+            </Link>
+            .
+          </li>
+        )}
+      </ul>
+    </>
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-5">
       {/* Heading */}
@@ -366,19 +477,38 @@ export default function HomeClient({
             focus={near}
             styleUrl={mapStyleUrl}
           />
-          <button
-            type="button"
-            onClick={() => setExpanded((e) => !e)}
-            className="absolute left-3 top-3 z-10 hidden items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200 lg:inline-flex"
-          >
-            <span aria-hidden className="text-base leading-none">
-              {expanded ? "✕" : "⛶"}
-            </span>
-            {expanded ? "Exit full map" : "Full map"}
-          </button>
-          {expanded && openTrainer && (
-            <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-5rem)] w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-3 backdrop-blur-md">
-              <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
+          {/* Top-left: full-map toggle, plus the location search when expanded */}
+          <div className="absolute left-3 top-3 z-10 hidden items-start gap-2 lg:flex">
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200"
+            >
+              <span aria-hidden className="text-base leading-none">
+                {expanded ? "✕" : "⛶"}
+              </span>
+              {expanded ? "Exit full map" : "Full map"}
+            </button>
+            {expanded && (
+              <div className="w-[420px] max-w-[38vw] rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md">
+                <LocationSearch
+                  areas={areasInCity}
+                  city={city}
+                  cityName={getCity(city).name}
+                  activeLabel={near?.label ?? null}
+                  onPick={(p) => {
+                    setNear({ lat: p.lat, lng: p.lng, label: p.label });
+                    setSelected(null);
+                  }}
+                  onClear={() => setNear(null)}
+                />
+              </div>
+            )}
+          </div>
+          {/* Right: trainer list / detail panel, same behaviour as the column */}
+          {expanded && (
+            <div className="absolute bottom-12 right-3 top-3 z-10 hidden w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-4 shadow-lg backdrop-blur-md lg:block">
+              {listBody}
             </div>
           )}
           {expanded && (
@@ -417,114 +547,7 @@ export default function HomeClient({
           style={fadeMask ? { maskImage: fadeMask, WebkitMaskImage: fadeMask } : undefined}
           className="order-4 lg:order-none lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
         >
-          {openTrainer ? (
-            <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
-          ) : (
-            <>
-          <div className="mb-2 flex items-center justify-between text-sm text-slate-400">
-            <span>
-              {loading ? "Loading…" : `${trainers.length} trainer${trainers.length === 1 ? "" : "s"}`}
-              {near && !loading && ` · closest to ${near.label}`}
-            </span>
-          </div>
-          <ul className="space-y-3">
-            {displayed.map(({ t, dist }) => (
-              <li key={t.id} onMouseEnter={() => setSelected(t.slug)}>
-                <Link
-                  href={`/trainer/${t.slug}`}
-                  className={`card block p-4 transition ${
-                    selectedTrainer?.slug === t.slug
-                      ? "border-pink-400/60 ring-2 ring-pink-500/30"
-                      : "card-hover"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate font-semibold text-slate-100">
-                          {t.name}
-                        </span>
-                        {t.verified && (
-                          <span
-                            title="Verified — claimed by the trainer"
-                            className="shrink-0 text-pink-400"
-                          >
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-0.5 text-sm text-slate-400">
-                        {t.area_name} · {t.activities.map((a) => a.name).join(", ")}
-                      </div>
-                      {dist != null && (
-                        <div className="mt-0.5 text-xs text-pink-400/80">
-                          ~{formatDistance(dist)} from {near?.label}
-                        </div>
-                      )}
-                    </div>
-                    <div className="shrink-0 text-right text-sm">
-                      {t.avg_rating ? (
-                        <div className="text-pink-400">{ratingStars(t.avg_rating)}</div>
-                      ) : (
-                        <div className="text-slate-500">No rating yet</div>
-                      )}
-                      <div className="text-xs text-slate-500">
-                        {t.rec_count} rec{t.rec_count === 1 ? "" : "s"}
-                      </div>
-                    </div>
-                  </div>
-                  {t.bio && (
-                    <p className="mt-2 line-clamp-2 text-sm text-slate-400">
-                      {t.bio}
-                    </p>
-                  )}
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                    <span className="chip">
-                      {formatPrice(t.price_min, t.price_max, t.price_unit)}
-                    </span>
-                    {t.modes.map((m) => (
-                      <span key={m} className="chip-accent">
-                        {m.replace("_", " ")}
-                      </span>
-                    ))}
-                    {/* Card is one big <Link>; a nested <a> is invalid HTML. */}
-                    <button
-                      type="button"
-                      className="chip ml-auto cursor-pointer hover:border-pink-400/50 hover:text-pink-200"
-                      title="Open directions in Google Maps"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.open(
-                          `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`,
-                          "_blank",
-                          "noopener,noreferrer"
-                        );
-                      }}
-                    >
-                      Directions ↗
-                    </button>
-                  </div>
-                  {t.languages.length > 0 && (
-                    <div className="mt-2 text-xs text-slate-500">
-                      🗣 {t.languages.join(", ")}
-                    </div>
-                  )}
-                </Link>
-              </li>
-            ))}
-            {!loading && trainers.length === 0 && (
-              <li className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
-                No trainers match these filters yet.{" "}
-                <Link href="/add" className="font-medium text-pink-400 underline">
-                  Recommend one
-                </Link>
-                .
-              </li>
-            )}
-          </ul>
-            </>
-          )}
+          {!expanded && listBody}
         </div>
       </div>
     </div>
