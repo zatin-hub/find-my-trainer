@@ -77,13 +77,13 @@ export default function MapView({
       attributionControl: false,
       transformRequest: olaTransform(activeStyle),
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-left");
     map.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: true,
       }),
-      "top-right"
+      "bottom-left"
     );
     // The basemap's one-way street arrows (visible z15+) read as clutter on a
     // trainer map — hide them whenever a style (re)loads.

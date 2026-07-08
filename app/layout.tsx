@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen text-slate-200 antialiased">
         <header className="glass sticky top-0 z-50 rounded-none border-x-0 border-t-0 border-b border-white/10">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4">
+          <div className="flex w-full items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-5">
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-1.5 font-bold md:gap-2">
                 <span className="text-lg max-[359px]:hidden md:text-xl">📍</span>

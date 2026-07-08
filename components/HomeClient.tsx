@@ -350,7 +350,7 @@ export default function HomeClient({
           className={
             expanded
               ? // Below the sticky header (z-50) so the brand bar stays visible.
-                "fixed inset-x-0 bottom-0 top-[63px] z-40 bg-slate-950"
+                "fmt-map-expanded fixed inset-x-0 bottom-0 top-[63px] z-40 bg-slate-950"
               : "relative order-2 h-[360px] overflow-hidden rounded-2xl border border-white/10 lg:order-none lg:h-[640px]"
           }
         >
@@ -369,9 +369,12 @@ export default function HomeClient({
           <button
             type="button"
             onClick={() => setExpanded((e) => !e)}
-            className="absolute left-3 top-3 z-10 hidden items-center gap-1.5 rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm font-medium text-slate-200 backdrop-blur transition hover:border-pink-400/40 hover:text-pink-200 lg:flex"
+            className="absolute left-3 top-3 z-10 hidden items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200 lg:inline-flex"
           >
-            {expanded ? <>✕ Exit full map</> : <>⛶ Full map</>}
+            <span aria-hidden className="text-base leading-none">
+              {expanded ? "✕" : "⛶"}
+            </span>
+            {expanded ? "Exit full map" : "Full map"}
           </button>
           {expanded && openTrainer && (
             <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-5rem)] w-[400px] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950/85 p-3 backdrop-blur-md">
