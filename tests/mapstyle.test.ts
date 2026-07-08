@@ -7,7 +7,7 @@ const DB = path.join(os.tmpdir(), `fmt-set-${process.pid}-${Date.now()}.db`);
 process.env.FMT_DB_PATH = DB;
 
 const { getSetting, setSetting, getSettings } = await import("@/lib/settings");
-const { resolveMapStyle, OPENFREEMAP_STYLE, HYBRID_STYLES } = await import(
+const { resolveMapStyle, DEFAULT_STYLE_URL, HYBRID_STYLES } = await import(
   "@/lib/mapstyle"
 );
 
@@ -42,8 +42,9 @@ describe("settings store", () => {
 });
 
 describe("resolveMapStyle", () => {
-  it("defaults to hybrid (OpenFreeMap) when unset", () => {
-    expect(resolveMapStyle(null, "key").styleUrl).toBe(OPENFREEMAP_STYLE);
+  it("defaults to hybrid + fmt-bright when unset", () => {
+    expect(resolveMapStyle(null, "key").styleUrl).toBe(DEFAULT_STYLE_URL);
+    expect(resolveMapStyle(null, "key").styleUrl).toBe("/fmt-bright.json");
     expect(resolveMapStyle(null, "key").provider).toBe("hybrid");
   });
   it("uses Ola tiles only when selected AND a key exists", () => {
@@ -68,10 +69,10 @@ describe("resolveMapStyle", () => {
   });
   it("falls back to default style on unknown values", () => {
     expect(resolveMapStyle(null, undefined, "neon").styleUrl).toBe(
-      OPENFREEMAP_STYLE
+      DEFAULT_STYLE_URL
     );
     expect(resolveMapStyle(null, undefined, null).styleUrl).toBe(
-      OPENFREEMAP_STYLE
+      DEFAULT_STYLE_URL
     );
   });
   it("keeps hybridStyle through an ola selection (for the admin picker)", () => {

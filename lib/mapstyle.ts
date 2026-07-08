@@ -4,25 +4,27 @@ import { getSettings } from "@/lib/settings";
 //  - provider: "hybrid" (OpenFreeMap tiles — free, unmetered, keyless) vs
 //    "ola" (Ola vector tiles — POI labels, metered 5M/mo, key exposed in the
 //    style URL as with any tile service).
-//  - hybrid base style: any hosted OpenFreeMap style, or "fmt-dark" — our
-//    customized dark (served from public/fmt-dark.json): POI dots + names,
-//    navy water, brighter street labels.
+//  - hybrid base style: any hosted OpenFreeMap style, or our customized
+//    "fmt-*" styles (regenerate with scripts/build-map-styles.mjs, served
+//    from public/): fmt-bright = bright + gap-filling POI names; fmt-dark =
+//    dark + POI dots/names, park greens, navy water, readable labels.
 // Geocoding is unaffected either way.
 
 export type MapProvider = "hybrid" | "ola";
 
 /** Hybrid-provider base styles. Keep the MapPanel picker list in sync. */
 export const HYBRID_STYLES = {
-  dark: "https://tiles.openfreemap.org/styles/dark",
+  "fmt-bright": "/fmt-bright.json",
+  bright: "https://tiles.openfreemap.org/styles/bright",
   "fmt-dark": "/fmt-dark.json",
+  dark: "https://tiles.openfreemap.org/styles/dark",
   fiord: "https://tiles.openfreemap.org/styles/fiord",
   liberty: "https://tiles.openfreemap.org/styles/liberty",
-  bright: "https://tiles.openfreemap.org/styles/bright",
   positron: "https://tiles.openfreemap.org/styles/positron",
 } as const;
 export type HybridStyle = keyof typeof HYBRID_STYLES;
-export const DEFAULT_HYBRID_STYLE: HybridStyle = "dark";
-export const OPENFREEMAP_STYLE = HYBRID_STYLES[DEFAULT_HYBRID_STYLE];
+export const DEFAULT_HYBRID_STYLE: HybridStyle = "fmt-bright";
+export const DEFAULT_STYLE_URL = HYBRID_STYLES[DEFAULT_HYBRID_STYLE];
 
 export function isHybridStyle(v: string | null | undefined): v is HybridStyle {
   return !!v && v in HYBRID_STYLES;

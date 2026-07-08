@@ -8,9 +8,11 @@ import { olaTransform } from "@/lib/map-client";
 
 const BENGALURU: [number, number] = [77.5946, 12.9716];
 
-// Free vector tiles, no API key. Dark style to match the theme; falls back to
+// Free vector tiles, no API key. Default is our customized bright style
+// (public/fmt-bright.json); degrades to stock OpenFreeMap bright, then
 // MapLibre demo tiles if offline.
-const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const STYLE_URL = "/fmt-bright.json";
+const OFM_FALLBACK = "https://tiles.openfreemap.org/styles/bright";
 const FALLBACK_STYLE = "https://demotiles.maplibre.org/style.json";
 
 // Color the inner dot for the selected / default state.
@@ -88,9 +90,9 @@ export default function MapView({
         ?.querySelector(".maplibregl-ctrl-attrib")
         ?.classList.remove("maplibregl-compact-show");
     });
-    // Style failure → degrade down the chain: custom/Ola → OpenFreeMap dark
-    // → MapLibre demo tiles.
-    const fallbacks = [STYLE_URL, FALLBACK_STYLE].filter(
+    // Style failure → degrade down the chain: custom/Ola → OpenFreeMap
+    // bright → MapLibre demo tiles.
+    const fallbacks = [OFM_FALLBACK, FALLBACK_STYLE].filter(
       (u) => u !== resolvedStyle && u !== activeStyle
     );
     let fallbackStep = 0;

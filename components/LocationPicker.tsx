@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { getCity } from "@/lib/cities";
 import { olaTransform } from "@/lib/map-client";
 
-const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const STYLE_URL = "/fmt-bright.json";
 
 interface GeoResult {
   label: string;
@@ -65,13 +65,17 @@ export default function LocationPicker({
       lat != null && lng != null
         ? [lng, lat]
         : [cityCenter.lng, cityCenter.lat];
+    const active = styleUrl || STYLE_URL;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: styleUrl || STYLE_URL,
+      // Self-hosted styles arrive as root-relative paths.
+      style: active.startsWith("/")
+        ? new URL(active, window.location.origin).href
+        : active,
       center: start,
       zoom: lat != null ? 14 : 11,
       attributionControl: { compact: true },
-      transformRequest: olaTransform(styleUrl || STYLE_URL),
+      transformRequest: olaTransform(active),
     });
     map.on("load", () => {
       containerRef.current

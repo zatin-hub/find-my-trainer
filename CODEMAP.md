@@ -14,7 +14,7 @@
 - `geocode.ts` — Ola (env-gated) + Photon + Nominatim merged forward/reverse geocode, city-bounded, cached. `geocode`, `reverseGeocode`
 - `geocache.ts` — 30-day geocode cache: KV (prod, `geo:` prefix on RATE_LIMIT ns) / memory (dev). `cacheGet`, `cacheSet`, `forwardKey`, `reverseKey`
 - `settings.ts` — admin-tunable key/value store (settings table). `getSetting`, `getSettings` (batch), `setSetting`
-- `mapstyle.ts` — map config: provider (hybrid/ola) + hybrid base style (OFM styles + custom `fmt-dark`). `getMapConfig`, `resolveMapStyle`, `HYBRID_STYLES`, `isHybridStyle`
+- `mapstyle.ts` — map config: provider (hybrid/ola) + hybrid base style (OFM styles + custom `fmt-bright` [default] / `fmt-dark`). `getMapConfig`, `resolveMapStyle`, `HYBRID_STYLES`, `isHybridStyle`
 - `map-client.ts` — client-safe helpers; appends api_key to Ola sub-requests + batched tile-usage beacon. `olaTransform`
 - `usage.ts` — self-measured provider usage counters (usage_counters table). `bumpUsage`, `getUsage`
 - `moderation.ts` — destructive admin cascades (tested). `deleteTrainerCascade`, `deleteRecommendationCascade`
@@ -56,8 +56,9 @@
 
 ## Other
 - `data/seed.ts` — taxonomy + 44 areas (city-tagged) + local-only sample trainers
-- `public/fmt-dark.json` — custom OFM dark style: POI dots+names, navy water,
-  brighter labels (generated from OFM dark; layers `poi_dot`, `poi_label_*`)
+- `public/fmt-bright.json` (default) / `fmt-dark.json` — custom map styles:
+  bright + gap-filling POI names; dark + POI dots/names, park greens, navy
+  water. Regenerate: `node scripts/build-map-styles.mjs`
 - `migrations/` — D1 SQL (remote); local equivalent lives in db.ts `migrate()`
 - `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (14 files)
 - `wrangler.toml` — Workers config: D1/KV bindings, observability, vars

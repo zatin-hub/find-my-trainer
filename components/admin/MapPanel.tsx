@@ -6,11 +6,12 @@ import { useModerate } from "@/components/admin/shared";
 // Keep in sync with HYBRID_STYLES in lib/mapstyle.ts (not imported — that
 // module is server-side; this is just the picker's display list).
 const STYLE_OPTIONS = [
-  ["dark", "Dark (stock)", "current default — grayscale dark, no POI labels"],
-  ["fmt-dark", "FMT dark (custom)", "POI names + dots, navy water, brighter street labels"],
+  ["fmt-bright", "FMT bright (custom, default)", "full color, POI icons + names, all street names"],
+  ["bright", "Bright (stock)", "full color, native POI icons only"],
+  ["fmt-dark", "FMT dark (custom)", "dark + POI names, park greens, navy water"],
+  ["dark", "Dark (stock)", "grayscale dark, no POI labels"],
   ["fiord", "Fiord", "dark navy-blue tone"],
   ["liberty", "Liberty", "full-color classic (light)"],
-  ["bright", "Bright", "full-color, denser (light)"],
   ["positron", "Positron", "light gray minimal"],
 ] as const;
 
