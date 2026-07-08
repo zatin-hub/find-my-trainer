@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Activity, Area } from "@/lib/types";
 
 const MODES: { value: string; label: string }[] = [
@@ -15,9 +15,11 @@ const GENDERS: { value: string; label: string }[] = [
 ];
 
 const RATINGS: { value: number; label: string }[] = [
-  { value: 3, label: "3★+" },
-  { value: 4, label: "4★+" },
+  { value: 3, label: "3★ & up" },
+  { value: 4, label: "4★ & up" },
 ];
+
+const PRICE_PRESETS = [1000, 2500, 5000, 10000];
 
 function toggle(list: string[], value: string): string[] {
   return list.includes(value)
@@ -41,15 +43,53 @@ function Chip({
       aria-pressed={active}
       className={`cursor-pointer py-1.5 lg:py-1 ${active ? "chip-accent" : "chip hover:border-white/25"}`}
     >
+      {active && <span aria-hidden>✓ </span>}
       {children}
     </button>
   );
 }
 
-type CatKey = "activity" | "area" | "mode" | "gender" | "rating" | "price";
+function Section({
+  label,
+  count,
+  onClear,
+  hint,
+  children,
+}: {
+  label: string;
+  count: number;
+  onClear?: () => void;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border-b border-white/5 py-4 first:pt-2 last:border-0">
+      <div className="mb-2.5 flex items-baseline gap-2">
+        <h3 className="text-sm font-semibold text-slate-200">{label}</h3>
+        {count > 0 ? (
+          <span className="rounded-full bg-pink-500 px-1.5 py-0.5 text-xs font-semibold leading-none text-slate-950">
+            {count}
+          </span>
+        ) : (
+          hint && <span className="text-xs text-slate-500">{hint}</span>
+        )}
+        {count > 0 && onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="ml-auto text-xs text-slate-500 transition hover:text-pink-300"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
 
-// Master-detail filter panel: category list on the left, that category's
-// options on the right. Nothing is cropped — each side scrolls independently.
+// One scrollable panel of labeled sections — every category (and what's
+// selected in it) visible at a glance; areas get their own mini-search.
 export default function FilterBar({
   activity,
   setActivity,
@@ -81,133 +121,148 @@ export default function FilterBar({
   activities: Activity[];
   areas: Area[];
 }) {
-  const [cat, setCat] = useState<CatKey>("activity");
-
-  const cats: { key: CatKey; label: string; count: number }[] = [
-    { key: "activity", label: "Activity", count: activity.length },
-    { key: "area", label: "Area", count: area.length },
-    { key: "mode", label: "Mode", count: mode.length },
-    { key: "gender", label: "Trainer", count: gender.length },
-    { key: "rating", label: "Min rating", count: minRating ? 1 : 0 },
-    { key: "price", label: "Max price", count: maxPrice !== "" ? 1 : 0 },
-  ];
+  const [areaQ, setAreaQ] = useState("");
+  const visibleAreas = useMemo(() => {
+    const q = areaQ.trim().toLowerCase();
+    if (!q) return areas;
+    return areas.filter((a) => a.name.toLowerCase().includes(q));
+  }, [areas, areaQ]);
 
   return (
-    <div className="flex min-h-0 w-full">
-      {/* Left: categories */}
-      <nav className="w-32 shrink-0 space-y-1 overflow-y-auto border-r border-white/10 p-2 sm:w-44">
-        {cats.map((c) => (
-          <button
-            key={c.key}
-            type="button"
-            onClick={() => setCat(c.key)}
-            className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
-              cat === c.key
-                ? "bg-pink-500/15 font-medium text-pink-200"
-                : "text-slate-300 hover:bg-white/5"
-            }`}
-          >
-            <span className="truncate">{c.label}</span>
-            {c.count > 0 && (
-              <span className="shrink-0 rounded-full bg-pink-500 px-1.5 py-0.5 text-xs font-semibold leading-none text-slate-950">
-                {c.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </nav>
+    <div className="min-h-0 w-full overflow-y-auto px-5">
+      <Section
+        label="Activity"
+        count={activity.length}
+        onClear={() => setActivity([])}
+        hint="any"
+      >
+        <div className="flex flex-wrap gap-2">
+          {activities.map((a) => (
+            <Chip
+              key={a.id}
+              active={activity.includes(a.slug)}
+              onClick={() => setActivity(toggle(activity, a.slug))}
+            >
+              {a.icon} {a.name}
+            </Chip>
+          ))}
+        </div>
+      </Section>
 
-      {/* Right: options for the selected category */}
-      <div className="min-w-0 flex-1 overflow-y-auto p-4">
-        {cat === "activity" && (
-          <div className="flex flex-wrap gap-2">
-            {activities.map((a) => (
-              <Chip
-                key={a.id}
-                active={activity.includes(a.slug)}
-                onClick={() => setActivity(toggle(activity, a.slug))}
-              >
-                {a.icon} {a.name}
-              </Chip>
-            ))}
-          </div>
-        )}
+      <Section
+        label="Area"
+        count={area.length}
+        onClear={() => setArea([])}
+        hint="anywhere in the city"
+      >
+        <input
+          value={areaQ}
+          onChange={(e) => setAreaQ(e.target.value)}
+          placeholder="Find an area…"
+          className="input mb-2.5 max-w-xs py-1.5 text-sm"
+        />
+        <div className="flex flex-wrap gap-2">
+          {visibleAreas.map((a) => (
+            <Chip
+              key={a.id}
+              active={area.includes(a.slug)}
+              onClick={() => setArea(toggle(area, a.slug))}
+            >
+              {a.name}
+            </Chip>
+          ))}
+          {visibleAreas.length === 0 && (
+            <p className="text-xs text-slate-500">No area matches “{areaQ}”.</p>
+          )}
+        </div>
+      </Section>
 
-        {cat === "area" && (
-          <div className="flex flex-wrap gap-2">
-            {areas.map((a) => (
-              <Chip
-                key={a.id}
-                active={area.includes(a.slug)}
-                onClick={() => setArea(toggle(area, a.slug))}
-              >
-                {a.name}
-              </Chip>
-            ))}
-          </div>
-        )}
+      <Section
+        label="Mode"
+        count={mode.length}
+        onClear={() => setMode([])}
+        hint="any"
+      >
+        <div className="flex flex-wrap gap-2">
+          {MODES.map((m) => (
+            <Chip
+              key={m.value}
+              active={mode.includes(m.value)}
+              onClick={() => setMode(toggle(mode, m.value))}
+            >
+              {m.label}
+            </Chip>
+          ))}
+        </div>
+      </Section>
 
-        {cat === "mode" && (
-          <div className="flex flex-wrap gap-2">
-            {MODES.map((m) => (
-              <Chip
-                key={m.value}
-                active={mode.includes(m.value)}
-                onClick={() => setMode(toggle(mode, m.value))}
-              >
-                {m.label}
-              </Chip>
-            ))}
-          </div>
-        )}
+      <Section
+        label="Trainer"
+        count={gender.length}
+        onClear={() => setGender([])}
+        hint="any"
+      >
+        <div className="flex flex-wrap gap-2">
+          {GENDERS.map((g) => (
+            <Chip
+              key={g.value}
+              active={gender.includes(g.value)}
+              onClick={() => setGender(toggle(gender, g.value))}
+            >
+              {g.label}
+            </Chip>
+          ))}
+        </div>
+      </Section>
 
-        {cat === "gender" && (
-          <div className="flex flex-wrap gap-2">
-            {GENDERS.map((g) => (
-              <Chip
-                key={g.value}
-                active={gender.includes(g.value)}
-                onClick={() => setGender(toggle(gender, g.value))}
-              >
-                {g.label}
-              </Chip>
-            ))}
-          </div>
-        )}
+      <Section
+        label="Min rating"
+        count={minRating ? 1 : 0}
+        onClear={() => setMinRating(0)}
+        hint="any"
+      >
+        <div className="flex flex-wrap gap-2">
+          {RATINGS.map((r) => (
+            <Chip
+              key={r.value}
+              active={minRating === r.value}
+              onClick={() => setMinRating(minRating === r.value ? 0 : r.value)}
+            >
+              {r.label}
+            </Chip>
+          ))}
+        </div>
+      </Section>
 
-        {cat === "rating" && (
-          <div className="flex flex-wrap gap-2">
-            {RATINGS.map((r) => (
-              <Chip
-                key={r.value}
-                active={minRating === r.value}
-                onClick={() => setMinRating(minRating === r.value ? 0 : r.value)}
-              >
-                {r.label}
-              </Chip>
-            ))}
-          </div>
-        )}
-
-        {cat === "price" && (
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
-              Max price (₹)
-            </label>
-            <input
-              type="number"
-              min={0}
-              step={500}
-              value={maxPrice}
-              onChange={(e) =>
-                setMaxPrice(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              placeholder="Any budget"
-              className="input w-48"
-            />
-          </div>
-        )}
-      </div>
+      <Section
+        label="Max price"
+        count={maxPrice !== "" ? 1 : 0}
+        onClear={() => setMaxPrice("")}
+        hint="any budget"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          {PRICE_PRESETS.map((p) => (
+            <Chip
+              key={p}
+              active={maxPrice === p}
+              onClick={() => setMaxPrice(maxPrice === p ? "" : p)}
+            >
+              ≤ ₹{p.toLocaleString("en-IN")}
+            </Chip>
+          ))}
+          <input
+            type="number"
+            min={0}
+            step={500}
+            value={maxPrice}
+            onChange={(e) =>
+              setMaxPrice(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="Custom ₹"
+            className="input w-32 py-1.5 text-sm"
+          />
+        </div>
+      </Section>
     </div>
   );
 }
