@@ -477,31 +477,42 @@ export default function HomeClient({
             focus={near}
             styleUrl={mapStyleUrl}
           />
-          {/* Top-left: full-map toggle, plus the location search when expanded */}
-          <div className="absolute left-3 top-3 z-10 hidden items-start gap-2 lg:flex">
-            <button
-              type="button"
-              onClick={() => setExpanded((e) => !e)}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200"
-            >
-              <span aria-hidden className="text-base leading-none">
-                {expanded ? "✕" : "⛶"}
-              </span>
-              {expanded ? "Exit full map" : "Full map"}
-            </button>
-            {expanded && (
-              <div className="w-[420px] max-w-[38vw] rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md">
-                <LocationSearch
-                  areas={areasInCity}
-                  city={city}
-                  cityName={getCity(city).name}
-                  activeLabel={near?.label ?? null}
-                  onPick={(p) => {
-                    setNear({ lat: p.lat, lng: p.lng, label: p.label });
-                    setSelected(null);
-                  }}
-                  onClear={() => setNear(null)}
-                />
+          {/* Top-left: full-map toggle; in full-map mode it fuses with the
+              location search into a single control bar. */}
+          <div className="absolute left-3 top-3 z-10 hidden lg:block">
+            {!expanded ? (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200"
+              >
+                <span aria-hidden className="text-base leading-none">⛶</span>
+                Full map
+              </button>
+            ) : (
+              <div className="flex w-[560px] max-w-[46vw] items-center gap-1.5 rounded-2xl border border-white/15 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(false)}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-100 transition hover:bg-white/10 hover:text-pink-200"
+                >
+                  <span aria-hidden className="text-base leading-none">✕</span>
+                  Exit full map
+                </button>
+                <div aria-hidden className="h-6 w-px shrink-0 bg-white/10" />
+                <div className="min-w-0 flex-1">
+                  <LocationSearch
+                    areas={areasInCity}
+                    city={city}
+                    cityName={getCity(city).name}
+                    activeLabel={near?.label ?? null}
+                    onPick={(p) => {
+                      setNear({ lat: p.lat, lng: p.lng, label: p.label });
+                      setSelected(null);
+                    }}
+                    onClear={() => setNear(null)}
+                  />
+                </div>
               </div>
             )}
           </div>
