@@ -74,13 +74,9 @@ export default function LocationPicker({
         : active,
       center: start,
       zoom: lat != null ? 14 : 11,
-      attributionControl: { compact: true },
+      // No on-map attribution badge; OSM credit lives in the site footer.
+      attributionControl: false,
       transformRequest: olaTransform(active),
-    });
-    map.on("load", () => {
-      containerRef.current
-        ?.querySelector(".maplibregl-ctrl-attrib")
-        ?.classList.remove("maplibregl-compact-show");
     });
 
     const marker = new maplibregl.Marker({ color: "#ff2a7a", draggable: true })

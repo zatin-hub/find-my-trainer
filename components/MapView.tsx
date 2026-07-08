@@ -24,7 +24,10 @@ function styleDot(dot: HTMLElement, selected: boolean) {
   dot.style.boxShadow = selected
     ? "0 0 0 4px rgba(255,122,40,0.4), 0 1px 6px rgba(0,0,0,0.4)"
     : "0 0 0 3px rgba(255,42,122,0.3), 0 1px 6px rgba(0,0,0,0.4)";
-  dot.style.zIndex = selected ? "2" : "1";
+  // Stacking lives on the marker root (siblings compete there, and the
+  // hover tooltip must ride above neighbouring pins — see .fmt-pin:hover).
+  const root = dot.parentElement;
+  if (root) root.style.zIndex = selected ? "2" : "1";
 }
 
 export default function MapView({
@@ -65,7 +68,8 @@ export default function MapView({
       style: resolvedStyle,
       center: BENGALURU,
       zoom: 11,
-      attributionControl: { compact: true },
+      // No on-map attribution badge; OSM credit lives in the site footer.
+      attributionControl: false,
       transformRequest: olaTransform(activeStyle),
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
@@ -76,8 +80,6 @@ export default function MapView({
       }),
       "top-right"
     );
-    // Compact attribution renders expanded on load; collapse it to the ⓘ badge
-    // (clicking the badge still expands it).
     // The basemap's one-way street arrows (visible z15+) read as clutter on a
     // trainer map — hide them whenever a style (re)loads.
     const hideOneway = () => {
@@ -86,12 +88,7 @@ export default function MapView({
       }
     };
     map.on("styledata", hideOneway);
-    map.on("load", () => {
-      hideOneway();
-      containerRef.current
-        ?.querySelector(".maplibregl-ctrl-attrib")
-        ?.classList.remove("maplibregl-compact-show");
-    });
+    map.on("load", hideOneway);
     // Style failure → degrade down the chain: custom/Ola → OpenFreeMap
     // bright → MapLibre demo tiles.
     const fallbacks = [OFM_FALLBACK, FALLBACK_STYLE].filter(
@@ -134,6 +131,7 @@ export default function MapView({
 
     for (const t of trainers) {
       const el = document.createElement("div");
+      el.className = "fmt-pin";
       el.style.cursor = "pointer";
 
       const dot = document.createElement("button");
@@ -142,13 +140,35 @@ export default function MapView({
         "flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white transition-transform duration-150 hover:scale-110";
       dot.style.fontSize = "14px";
       dot.textContent = t.activities[0]?.icon ?? "📍";
-      dot.title = t.name;
-      styleDot(dot, t.slug === selectedSlug);
       dot.addEventListener("click", (ev) => {
         ev.stopPropagation();
         onSelectRef.current?.(t.slug);
       });
       el.appendChild(dot);
+
+      // Hover tooltip: name, primary activity (+N more), area. Built with
+      // textContent — trainer fields are user-submitted.
+      const tip = document.createElement("div");
+      tip.className = "map-tip";
+      const tipName = document.createElement("div");
+      tipName.className = "map-tip-name";
+      tipName.textContent = t.name;
+      const tipMeta = document.createElement("div");
+      tipMeta.className = "map-tip-meta";
+      const primary = t.activities[0];
+      tipMeta.append(primary ? `${primary.icon} ${primary.name}` : "Trainer");
+      if (t.activities.length > 1) {
+        tipMeta.append(" ");
+        const more = document.createElement("span");
+        more.className = "map-tip-more";
+        more.textContent = `+${t.activities.length - 1}`;
+        tipMeta.append(more);
+      }
+      if (t.area_name) tipMeta.append(` · ${t.area_name}`);
+      tip.append(tipName, tipMeta);
+      el.appendChild(tip);
+
+      styleDot(dot, t.slug === selectedSlug);
       dotsRef.current.set(t.slug, dot);
 
       const marker = new maplibregl.Marker({ element: el })

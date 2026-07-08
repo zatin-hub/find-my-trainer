@@ -152,6 +152,58 @@ body {
   filter: invert(1);
 }
 
+/* Trainer-pin hover tooltip — same dark glass language as the popups. */
+.fmt-pin .map-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  pointer-events: none;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.65rem;
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.fmt-pin .map-tip::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 4px);
+  left: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  background: rgba(15, 23, 42, 0.88);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.map-tip-name {
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.map-tip-meta {
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.map-tip-more {
+  color: #ff2a7a;
+  font-weight: 600;
+}
+.fmt-pin:hover .map-tip,
+.fmt-pin:focus-within .map-tip {
+  display: block;
+}
+.fmt-pin:hover {
+  z-index: 10 !important;
+}
+
 /* Respect reduced-motion: drop lift transforms for users who opt out. */
 @media (prefers-reduced-motion: reduce) {
   .card-hover:hover,
