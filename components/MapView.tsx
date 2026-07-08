@@ -187,6 +187,14 @@ export default function MapView({
         .addTo(map);
       markersRef.current.push(marker);
     }
+
+    // Fit the view to the result set (a fixed city zoom cropped the pin
+    // cluster on load). Skip while a searched location owns the camera.
+    if (!focusActiveRef.current && trainers.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      for (const t of trainers) bounds.extend([t.lng, t.lat]);
+      map.fitBounds(bounds, { padding: 64, maxZoom: 13.5, duration: 700 });
+    }
     // selectedSlug intentionally omitted: selection only recolors, below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trainers]);

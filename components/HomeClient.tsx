@@ -490,13 +490,13 @@ export default function HomeClient({
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-slate-950/85 px-3.5 py-2 text-sm font-medium text-slate-100 shadow-lg backdrop-blur-md transition hover:border-pink-400/50 hover:text-pink-200"
+                className="glass-dark inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium text-slate-100 transition hover:border-pink-400/50 hover:text-pink-200"
               >
                 <span aria-hidden className="text-base leading-none">⛶</span>
                 Full map
               </button>
             ) : (
-              <div className="flex w-[560px] max-w-[46vw] items-center gap-1.5 rounded-2xl border border-white/15 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md">
+              <div className="glass-dark flex w-[560px] max-w-[46vw] items-center gap-1.5 rounded-2xl p-1.5">
                 <button
                   type="button"
                   onClick={() => setExpanded(false)}
@@ -524,13 +524,13 @@ export default function HomeClient({
           </div>
           {/* Right: trainer search + list / detail panel, same as the column */}
           {expanded && (
-            <div className="absolute bottom-12 right-3 top-3 z-10 hidden w-[400px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-white/10 bg-slate-950/85 p-4 shadow-lg backdrop-blur-md lg:flex">
+            <div className="glass-dark absolute bottom-12 right-3 top-3 z-10 hidden w-[400px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl p-4 lg:flex">
               <div className="mb-3 shrink-0">{trainerSearchRow}</div>
               <div className="min-h-0 flex-1 overflow-y-auto">{listBody}</div>
             </div>
           )}
           {expanded && (
-            <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-2 border-t border-white/10 bg-slate-950/80 px-4 py-2 text-xs text-slate-400 backdrop-blur">
+            <div className="glass-dark absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-2 rounded-none border-x-0 border-b-0 px-4 py-2 text-xs text-slate-400">
               <span className="font-semibold text-slate-200">
                 📍 find<span className="text-pink-400">my</span>trainer
               </span>
