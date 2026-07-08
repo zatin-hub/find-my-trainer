@@ -409,7 +409,7 @@ export default function HomeClient({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setFiltersOpen(false)}
           />
-          <div className="relative z-10 flex h-[min(52rem,88vh)] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-slate-900 shadow-2xl sm:rounded-2xl">
+          <div className="relative z-10 flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-slate-900 shadow-2xl sm:rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <h2 className="text-base font-semibold text-white">
                 Filter trainers
