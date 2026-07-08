@@ -67,6 +67,11 @@
 
 ## Done log
 
+- 2026-07-08 — Mobile audit + fixes: header fits 390px (was clipped/123px
+  tall), 16px inputs kill iOS focus-zoom, map first on mobile, pin-tap
+  scrolls the profile panel into view, tap targets bumped (chips, city
+  switcher, helpful/report, map controls 40px).
+
 - 2026-07-08 — DPDP: /privacy + /terms live, one-click unsubscribe in alert
   emails (HMAC, GET-confirm/POST-delete), footer links, launch-blocker list
   started.

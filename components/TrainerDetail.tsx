@@ -84,7 +84,8 @@ export default function TrainerDetail({
       </div>
 
       <p className="mt-3 text-xs text-slate-500">
-        Tip: press Esc or click the map background to go back.
+        Tip: tap the map background{" "}
+        <span className="hidden lg:inline">or press Esc </span>to go back.
       </p>
     </div>
   );

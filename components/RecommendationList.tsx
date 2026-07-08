@@ -92,7 +92,7 @@ function RecCard({
         <button
           onClick={vote}
           disabled={busy}
-          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 transition ${
+          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 transition ${
             voted
               ? "border-pink-400/40 bg-pink-400/10 text-pink-300"
               : "border-white/15 text-slate-400 hover:border-white/30"
@@ -103,7 +103,7 @@ function RecCard({
         <button
           onClick={report}
           disabled={reported}
-          className="text-slate-500 hover:text-rose-400 disabled:text-slate-600"
+          className="px-1 py-1.5 text-slate-500 hover:text-rose-400 disabled:text-slate-600"
         >
           {reported ? "Reported" : "Report"}
         </button>

@@ -39,7 +39,7 @@ function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={active ? "chip-accent cursor-pointer" : "chip cursor-pointer hover:border-white/25"}
+      className={`cursor-pointer py-1.5 lg:py-1 ${active ? "chip-accent" : "chip hover:border-white/25"}`}
     >
       {children}
     </button>

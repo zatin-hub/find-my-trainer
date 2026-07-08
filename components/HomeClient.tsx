@@ -112,6 +112,9 @@ export default function HomeClient({
   };
   useEffect(() => {
     if (!open) return;
+    // On mobile the panel sits below the map — bring it into view on open.
+    if (window.innerWidth < 1024)
+      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeDetail();
     };
@@ -326,8 +329,8 @@ export default function HomeClient({
       )}
 
       <div className="grid gap-5 lg:grid-cols-[1fr_440px] lg:gap-6">
-        {/* Map */}
-        <div className="order-2 h-[420px] overflow-hidden rounded-2xl border border-white/10 lg:order-1 lg:h-[640px]">
+        {/* Map — first on mobile (it's the product); list beside it on lg. */}
+        <div className="order-1 h-[360px] overflow-hidden rounded-2xl border border-white/10 lg:h-[640px]">
           <MapView
             trainers={trainers}
             selectedSlug={selected}
@@ -347,7 +350,7 @@ export default function HomeClient({
           ref={listRef}
           onScroll={updateFade}
           style={fadeMask ? { maskImage: fadeMask, WebkitMaskImage: fadeMask } : undefined}
-          className="order-1 lg:order-2 lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
+          className="order-2 lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
         >
           {openTrainer ? (
             <TrainerDetail trainer={openTrainer} onBack={closeDetail} />

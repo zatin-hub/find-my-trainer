@@ -47,7 +47,7 @@ export default function CitySwitcher() {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-slate-200 transition hover:border-white/25 hover:text-white"
+        className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-slate-200 transition hover:border-white/25 hover:text-white"
       >
         {current.name}
         <span aria-hidden className="text-[10px] text-slate-400">

@@ -20,7 +20,7 @@ export default function RootLayout({
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-2 font-bold">
-                <span className="text-xl">📍</span>
+                <span className="hidden text-xl md:inline">📍</span>
                 <span className="text-lg tracking-tight text-white">
                   find<span className="text-pink-400">my</span>trainer
                 </span>
@@ -35,12 +35,17 @@ export default function RootLayout({
                 <CitySwitcher />
               </Suspense>
             </div>
-            <nav className="flex items-center gap-2 text-sm font-medium">
-              <Link href="/alert" className="btn-outline">
-                🔔 Get a match alert
+            <nav className="flex shrink-0 items-center gap-2 text-sm font-medium">
+              <Link
+                href="/alert"
+                aria-label="Get a match alert"
+                className="btn-outline whitespace-nowrap"
+              >
+                🔔<span className="hidden md:inline"> Get a match alert</span>
               </Link>
-              <Link href="/add" className="btn-primary">
-                Recommend a trainer
+              <Link href="/add" className="btn-primary whitespace-nowrap">
+                <span className="hidden md:inline">Recommend a trainer</span>
+                <span className="md:hidden">+ Add</span>
               </Link>
             </nav>
           </div>

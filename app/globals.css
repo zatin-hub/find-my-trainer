@@ -152,6 +152,20 @@ body {
   filter: invert(1);
 }
 
+/* Mobile: 16px form controls (anything smaller makes iOS Safari auto-zoom on
+   focus) and 40px map control buttons for touch. */
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  .maplibregl-ctrl-group button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* Trainer-pin hover tooltip — same dark glass language as the popups. */
 .fmt-pin .map-tip {
   position: absolute;
