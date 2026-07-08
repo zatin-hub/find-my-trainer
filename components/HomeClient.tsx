@@ -115,8 +115,14 @@ export default function HomeClient({
   // on top of it. Esc closes the panel first, then exits the full map.
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
-    document.body.style.overflow = expanded ? "hidden" : "";
+    // Lock the root element too: html has overflow-x:clip, which stops the
+    // body overflow value from propagating to the viewport — body alone
+    // left the page scrollable behind the expanded map.
+    const v = expanded ? "hidden" : "";
+    document.documentElement.style.overflow = v;
+    document.body.style.overflow = v;
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, [expanded]);
@@ -409,7 +415,7 @@ export default function HomeClient({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setFiltersOpen(false)}
           />
-          <div className="relative z-10 flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-slate-900 shadow-2xl sm:rounded-2xl">
+          <div className="relative z-10 flex h-[min(56rem,90vh)] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-slate-900 shadow-2xl sm:rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <h2 className="text-base font-semibold text-white">
                 Filter trainers

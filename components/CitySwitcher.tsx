@@ -61,10 +61,10 @@ export default function CitySwitcher() {
           aria-label="Select your city"
           className="fixed inset-x-4 top-[72px] z-50 rounded-2xl border border-white/10 bg-slate-900 p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-auto sm:mt-2 sm:w-[340px]"
         >
-          <p className="mb-2 text-center text-xs font-medium uppercase tracking-wide text-slate-500">
+          <p className="mb-2 px-1 text-xs font-medium uppercase tracking-wide text-slate-500">
             Available cities
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-1.5">
             {CITIES.map((c) => {
               const active = c.slug === current.slug;
               return (
@@ -72,22 +72,27 @@ export default function CitySwitcher() {
                   key={c.slug}
                   type="button"
                   onClick={() => go(c.slug)}
-                  className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 transition ${
+                  className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
                     active
                       ? "border-pink-400/50 bg-pink-500/15"
                       : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
                   }`}
                 >
-                  <span aria-hidden className="text-2xl">
+                  <span aria-hidden className="text-xl">
                     {CITY_ICON[c.slug] ?? "🏙️"}
                   </span>
                   <span
-                    className={`text-center text-xs font-medium ${
+                    className={`text-sm font-medium ${
                       active ? "text-pink-200" : "text-slate-300"
                     }`}
                   >
                     {c.name}
                   </span>
+                  {active && (
+                    <span aria-hidden className="ml-auto text-sm text-pink-300">
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
