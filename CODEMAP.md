@@ -56,7 +56,8 @@
 - `MapView` — MapLibre + admin-selected style, recolor-not-rebuild pins, geolocate control · `LocationPicker` — draggable-pin + address search (add flow)
 - `LocationSearch` — two-tier: instant area matches + debounced street results via /api/geocode · `FilterBar` — master-detail filter panel · `CitySwitcher` — header city popover
 - `AddTrainerForm` — 4-step add wizard · `MatchAlertForm` — 3-step alert wizard · `RecommendForm` — rec on profile
-- `TrainerCard`, `RecommendationList` — display · `AdminLogin` + `admin/*` panels
+- `TrainerDetail` — inline profile panel in the home list column on pin click
+  (back/Esc/basemap-click dismiss) · `TrainerCard`, `RecommendationList` — display · `AdminLogin` + `admin/*` panels
   (AdminNav, TrainersPanel, RecsPanel, ReportsPanel, AlertsPanel, MapPanel,
   AuditPanel, shared.tsx = useModerate hook + badges) · `ClaimFlow`, `EditProfile` — claim (gated)
 

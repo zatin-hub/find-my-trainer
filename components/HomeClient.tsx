@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Activity, Area, Trainer } from "@/lib/types";
 import FilterBar from "@/components/FilterBar";
 import LocationSearch from "@/components/LocationSearch";
+import TrainerDetail from "@/components/TrainerDetail";
 import { formatPrice, formatDistance, ratingStars } from "@/lib/format";
 import { distanceMeters } from "@/lib/geo";
 import { getCity } from "@/lib/cities";
@@ -97,6 +98,27 @@ export default function HomeClient({
     () => trainers.find((t) => t.slug === selected) ?? null,
     [trainers, selected]
   );
+
+  // Pin click opens an inline profile panel in the list column (hover only
+  // highlights). Back button / Esc / basemap click return to the list.
+  const [open, setOpen] = useState<string | null>(null);
+  const openTrainer = useMemo(
+    () => trainers.find((t) => t.slug === open) ?? null,
+    [trainers, open]
+  );
+  const closeDetail = () => {
+    setOpen(null);
+    setSelected(null);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDetail();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Edge fade for the list: only fade the side that has off-screen content
   // (top when scrolled down, bottom when more below) — never a static mask.
@@ -309,7 +331,11 @@ export default function HomeClient({
           <MapView
             trainers={trainers}
             selectedSlug={selected}
-            onSelect={setSelected}
+            onSelect={(slug) => {
+              setSelected(slug);
+              setOpen(slug);
+            }}
+            onBackgroundClick={closeDetail}
             center={cityCenter}
             focus={near}
             styleUrl={mapStyleUrl}
@@ -323,6 +349,10 @@ export default function HomeClient({
           style={fadeMask ? { maskImage: fadeMask, WebkitMaskImage: fadeMask } : undefined}
           className="order-1 lg:order-2 lg:h-[640px] lg:overflow-y-auto lg:border-l lg:border-white/10 lg:pl-6"
         >
+          {openTrainer ? (
+            <TrainerDetail trainer={openTrainer} onBack={closeDetail} />
+          ) : (
+            <>
           <div className="mb-2 flex items-center justify-between text-sm text-slate-400">
             <span>
               {loading ? "Loading…" : `${trainers.length} trainer${trainers.length === 1 ? "" : "s"}`}
@@ -425,6 +455,8 @@ export default function HomeClient({
               </li>
             )}
           </ul>
+            </>
+          )}
         </div>
       </div>
     </div>

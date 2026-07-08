@@ -34,6 +34,7 @@ export default function MapView({
   trainers,
   selectedSlug,
   onSelect,
+  onBackgroundClick,
   center,
   focus,
   styleUrl,
@@ -41,6 +42,8 @@ export default function MapView({
   trainers: Trainer[];
   selectedSlug?: string | null;
   onSelect?: (slug: string) => void;
+  // Click on the basemap (not a pin) — used to dismiss the detail panel.
+  onBackgroundClick?: () => void;
   center?: { lat: number; lng: number; zoom?: number } | null;
   // Searched location: gets its own distinct pin (orange) on the map.
   focus?: { lat: number; lng: number; label?: string } | null;
@@ -54,6 +57,8 @@ export default function MapView({
   const focusRef = useRef<maplibregl.Marker | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onBackgroundClickRef = useRef(onBackgroundClick);
+  onBackgroundClickRef.current = onBackgroundClick;
 
   // Init map once (per style — admin provider switch remounts via key/prop).
   const activeStyle = styleUrl || STYLE_URL;
@@ -89,6 +94,8 @@ export default function MapView({
     };
     map.on("styledata", hideOneway);
     map.on("load", hideOneway);
+    // Pin clicks stopPropagation, so this only fires for the basemap.
+    map.on("click", () => onBackgroundClickRef.current?.());
     // Style failure → degrade down the chain: custom/Ola → OpenFreeMap
     // bright → MapLibre demo tiles.
     const fallbacks = [OFM_FALLBACK, FALLBACK_STYLE].filter(
