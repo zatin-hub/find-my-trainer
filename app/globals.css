@@ -76,6 +76,25 @@ body {
       inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
       0 16px 40px -12px rgba(0, 0, 0, 0.6);
   }
+  /* Content on glass sits over a bright, busy map — solidify the cards and
+     lift the grey text a few steps or it reads as blended/washed out. */
+  .glass-dark .card {
+    background: rgba(10, 14, 26, 0.7);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .glass-dark .text-slate-400 {
+    color: #bac4d8;
+  }
+  .glass-dark .text-slate-500 {
+    color: #9fabc2;
+  }
+  .glass-dark .chip {
+    color: #d3dae6;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .glass-dark input::placeholder {
+    color: rgba(203, 213, 225, 0.6);
+  }
 
   .input {
     @apply w-full rounded-xl border border-white/10 bg-white/[0.05] px-3.5 py-2.5
