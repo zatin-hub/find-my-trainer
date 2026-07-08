@@ -49,7 +49,7 @@
   trainers, recommendations, reports, alerts, map (provider+usage), audit
 - `activities` (+`[activity]`, `[activity]/[area]`) — SEO browse pages · `sitemap.ts`, `robots.ts`
 - `privacy` · `terms` — DPDP notice + terms (grievance contact is a
-  placeholder — see tasks/todo.md launch blockers)
+  placeholder — P0 in LAUNCH.md)
 
 ## components/
 - `HomeClient` — home state hub: filters, search, city scoping, list+map, scroll fade
@@ -69,3 +69,5 @@
 - `migrations/` — D1 SQL (remote); local equivalent lives in db.ts `migrate()`
 - `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (15 files)
 - `wrangler.toml` — Workers config: D1/KV bindings, observability, vars
+- `LAUNCH.md` — public-launch checklist (P0/P1/P2 + day-of smoke); update in
+  the same change that closes an item

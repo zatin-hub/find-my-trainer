@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 // PENDING BEFORE PUBLIC LAUNCH: replace with the real grievance/contact
-// address (tracked in tasks/todo.md).
+// address (P0 in LAUNCH.md).
 const CONTACT_EMAIL = "grievance@findmytrainer.example";
 
 const H2 = "mt-8 text-lg font-semibold text-slate-100";
