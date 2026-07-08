@@ -15,13 +15,15 @@ const STYLE_URL = "/fmt-bright.json";
 const OFM_FALLBACK = "https://tiles.openfreemap.org/styles/bright";
 const FALLBACK_STYLE = "https://demotiles.maplibre.org/style.json";
 
-// Color the inner dot for the selected / default state.
+// Color the inner dot for the selected / default state. The face stays
+// neutral so the activity emoji reads; the Splunk palette (orange selected,
+// magenta default) lives in the border + glow ring.
 function styleDot(dot: HTMLElement, selected: boolean) {
-  // Splunk palette: orange when selected, magenta by default.
-  dot.style.background = selected ? "#ff7a28" : "#ff2a7a";
+  dot.style.background = "#fdfdfc";
+  dot.style.borderColor = selected ? "#ff7a28" : "#ff2a7a";
   dot.style.boxShadow = selected
-    ? "0 0 0 4px rgba(255,122,40,0.35)"
-    : "0 0 0 3px rgba(255,42,122,0.28)";
+    ? "0 0 0 4px rgba(255,122,40,0.4), 0 1px 6px rgba(0,0,0,0.4)"
+    : "0 0 0 3px rgba(255,42,122,0.3), 0 1px 6px rgba(0,0,0,0.4)";
   dot.style.zIndex = selected ? "2" : "1";
 }
 
