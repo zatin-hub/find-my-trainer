@@ -17,11 +17,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen text-slate-200 antialiased">
         <header className="glass sticky top-0 z-50 rounded-none border-x-0 border-t-0 border-b border-white/10">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4">
             <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-2 font-bold">
-                <span className="hidden text-xl md:inline">📍</span>
-                <span className="text-lg tracking-tight text-white">
+              <Link href="/" className="flex items-center gap-1.5 font-bold md:gap-2">
+                <span className="text-lg max-[359px]:hidden md:text-xl">📍</span>
+                <span className="text-sm tracking-tight text-white md:text-lg">
                   find<span className="text-pink-400">my</span>trainer
                 </span>
               </Link>
@@ -39,11 +39,11 @@ export default function RootLayout({
               <Link
                 href="/alert"
                 aria-label="Get a match alert"
-                className="btn-outline whitespace-nowrap"
+                className="btn-outline whitespace-nowrap px-2 md:px-3.5"
               >
                 🔔<span className="hidden md:inline"> Get a match alert</span>
               </Link>
-              <Link href="/add" className="btn-primary whitespace-nowrap">
+              <Link href="/add" className="btn-primary whitespace-nowrap px-3 md:px-4">
                 <span className="hidden md:inline">Recommend a trainer</span>
                 <span className="md:hidden">+ Add</span>
               </Link>
