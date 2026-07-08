@@ -10,7 +10,8 @@
 
 # Backlog
 
-- [ ] GitHub remote + push (repo is laptop-only — single point of failure).
+- [x] GitHub remote + push — origin = github.com/zatin-hub/find-my-trainer
+      (NOTE: repo is PUBLIC; flip to private if that wasn't intentional).
 - [ ] OTP brute-force cap on claims/verify (moot while ENABLE_CLAIMS=false).
 - [ ] Marker clustering (~100+ pins).
 - [ ] npm audit moderates; findSimilarTrainers full-table scan; modes/languages allowlist.
