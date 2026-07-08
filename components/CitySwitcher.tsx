@@ -59,7 +59,7 @@ export default function CitySwitcher() {
         <div
           role="dialog"
           aria-label="Select your city"
-          className="absolute left-0 z-50 mt-2 w-[340px] max-w-[90vw] rounded-2xl border border-white/10 bg-slate-900 p-3 shadow-2xl"
+          className="fixed inset-x-4 top-[72px] z-50 rounded-2xl border border-white/10 bg-slate-900 p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-auto sm:mt-2 sm:w-[340px]"
         >
           <p className="mb-2 text-center text-xs font-medium uppercase tracking-wide text-slate-500">
             Available cities
