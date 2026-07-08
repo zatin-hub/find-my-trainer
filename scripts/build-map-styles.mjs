@@ -100,6 +100,11 @@ function buildDark(style) {
     }
   );
 
+  // Buildings: stock dark paints them darker than the background (rgb(10,10,10)
+  // on rgb(12,12,12) — readable only by outline); lift so mass reads.
+  byId.building.paint["fill-color"] = "rgb(18,18,20)";
+  byId.building.paint["fill-outline-color"] = "rgb(30,30,33)";
+
   // Brighter street/place labels (stock dark is close to unreadable).
   byId.highway_name_other.paint["text-color"] = "rgba(148,152,164,1)";
   byId.highway_name_motorway.paint["text-color"] = "rgb(150,154,166)";
