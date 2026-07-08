@@ -52,15 +52,26 @@ export default function MapView({
   const activeStyle = styleUrl || STYLE_URL;
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    // Self-hosted styles (e.g. /fmt-dark.json) arrive as root-relative paths.
+    const resolvedStyle = activeStyle.startsWith("/")
+      ? new URL(activeStyle, window.location.origin).href
+      : activeStyle;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: activeStyle,
+      style: resolvedStyle,
       center: BENGALURU,
       zoom: 11,
       attributionControl: { compact: true },
       transformRequest: olaTransform(activeStyle),
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+      }),
+      "top-right"
+    );
     // Compact attribution renders expanded on load; collapse it to the ⓘ badge
     // (clicking the badge still expands it).
     // The basemap's one-way street arrows (visible z15+) read as clutter on a
@@ -77,13 +88,19 @@ export default function MapView({
         ?.querySelector(".maplibregl-ctrl-attrib")
         ?.classList.remove("maplibregl-compact-show");
     });
+    // Style failure → degrade down the chain: custom/Ola → OpenFreeMap dark
+    // → MapLibre demo tiles.
+    const fallbacks = [STYLE_URL, FALLBACK_STYLE].filter(
+      (u) => u !== resolvedStyle && u !== activeStyle
+    );
+    let fallbackStep = 0;
     map.on("error", (e) => {
-      // Tile/style failure → degrade gracefully: Ola style falls back to
-      // OpenFreeMap; OpenFreeMap falls back to demo tiles.
       const msg = String(e?.error?.message || "");
       if (msg.includes("style") || msg.includes("Failed to fetch")) {
+        const next = fallbacks[fallbackStep++];
+        if (!next) return;
         try {
-          map.setStyle(activeStyle !== STYLE_URL ? STYLE_URL : FALLBACK_STYLE);
+          map.setStyle(next);
         } catch {
           /* ignore */
         }

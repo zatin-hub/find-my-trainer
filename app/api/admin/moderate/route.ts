@@ -7,6 +7,7 @@ import {
   deleteTrainerCascade,
 } from "@/lib/moderation";
 import { setSetting } from "@/lib/settings";
+import { isHybridStyle } from "@/lib/mapstyle";
 
 type Action =
   | "approve_trainer"
@@ -19,7 +20,11 @@ type Action =
   | "delete_rec"
   | "set_verified"
   | "verify_instagram"
-  | "set_map_provider";
+  | "set_map_provider"
+  | "set_map_style";
+
+// Global settings actions — no target id.
+const GLOBAL_ACTIONS = new Set<Action>(["set_map_provider", "set_map_style"]);
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin()))
@@ -34,8 +39,7 @@ export async function POST(req: NextRequest) {
 
   const action = body.action as Action;
   const id = Number(body.id);
-  // set_map_provider is a global setting — no target id.
-  if (!Number.isInteger(id) && action !== "set_map_provider")
+  if (!Number.isInteger(id) && !GLOBAL_ACTIONS.has(action))
     return NextResponse.json({ error: "Bad id" }, { status: 400 });
 
   const d = await db();
@@ -52,6 +56,7 @@ export async function POST(req: NextRequest) {
     delete_rec: "recommendation",
     resolve_report: "report",
     set_map_provider: "setting",
+    set_map_style: "setting",
   };
   const logAudit = (detail?: string) =>
     d.run(
@@ -115,6 +120,14 @@ export async function POST(req: NextRequest) {
         );
       await setSetting("map_provider", value);
       auditDetail = `map provider -> ${value}`;
+      break;
+    }
+    case "set_map_style": {
+      const value = String(body.value || "");
+      if (!isHybridStyle(value))
+        return NextResponse.json({ error: "Bad style" }, { status: 400 });
+      await setSetting("map_style", value);
+      auditDetail = `map style -> ${value}`;
       break;
     }
     case "delete_trainer":

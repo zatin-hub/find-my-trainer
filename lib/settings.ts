@@ -12,6 +12,21 @@ export async function getSetting(key: string): Promise<string | null> {
   return row?.value ?? null;
 }
 
+/** Batch read — one query however many keys (D1 is metered). */
+export async function getSettings(
+  keys: string[]
+): Promise<Record<string, string | null>> {
+  if (keys.length === 0) return {};
+  const rows = await (await db()).all<{ key: string; value: string }>(
+    `SELECT key, value FROM settings WHERE key IN (${keys.map(() => "?").join(",")})`,
+    keys
+  );
+  const out: Record<string, string | null> = {};
+  for (const k of keys) out[k] = null;
+  for (const r of rows) out[r.key] = r.value;
+  return out;
+}
+
 export async function setSetting(key: string, value: string): Promise<void> {
   await (await db()).run(
     `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))

@@ -13,8 +13,8 @@
 - `cities.ts` — city SSOT (slugs/centers/bboxes). `CITIES`, `DEFAULT_CITY`, `getCity`, `inCity`
 - `geocode.ts` — Ola (env-gated) + Photon + Nominatim merged forward/reverse geocode, city-bounded, cached. `geocode`, `reverseGeocode`
 - `geocache.ts` — 30-day geocode cache: KV (prod, `geo:` prefix on RATE_LIMIT ns) / memory (dev). `cacheGet`, `cacheSet`, `forwardKey`, `reverseKey`
-- `settings.ts` — admin-tunable key/value store (settings table). `getSetting`, `setSetting`
-- `mapstyle.ts` — tile-provider switch (hybrid=OpenFreeMap / ola), server-side. `getMapConfig`, `resolveMapStyle`
+- `settings.ts` — admin-tunable key/value store (settings table). `getSetting`, `getSettings` (batch), `setSetting`
+- `mapstyle.ts` — map config: provider (hybrid/ola) + hybrid base style (OFM styles + custom `fmt-dark`). `getMapConfig`, `resolveMapStyle`, `HYBRID_STYLES`, `isHybridStyle`
 - `map-client.ts` — client-safe helpers; appends api_key to Ola sub-requests + batched tile-usage beacon. `olaTransform`
 - `usage.ts` — self-measured provider usage counters (usage_counters table). `bumpUsage`, `getUsage`
 - `moderation.ts` — destructive admin cascades (tested). `deleteTrainerCascade`, `deleteRecommendationCascade`
@@ -35,7 +35,7 @@
 - `recommendations` (+`[id]/vote`) — add rec / toggle vote
 - `geocode` — proxy for lib/geocode (rate-limited; `?q=` or `?lat&lng`)
 - `seeker-pins` — match-alert signup · `reports` — flag content
-- `admin/login|moderate` — auth; moderate = approve/hide/delete/merge/verify/IG-check + audit log
+- `admin/login|moderate` — auth; moderate = approve/hide/delete/merge/verify/IG-check/map provider+style + audit log
 - `claims/start|verify` — OTP claim (gated off in prod)
 
 ## app/ (pages, all force-dynamic)
@@ -47,7 +47,7 @@
 
 ## components/
 - `HomeClient` — home state hub: filters, search, city scoping, list+map, scroll fade
-- `MapView` — MapLibre + OpenFreeMap, recolor-not-rebuild pins · `LocationPicker` — draggable-pin + address search (add flow)
+- `MapView` — MapLibre + admin-selected style, recolor-not-rebuild pins, geolocate control · `LocationPicker` — draggable-pin + address search (add flow)
 - `LocationSearch` — two-tier: instant area matches + debounced street results via /api/geocode · `FilterBar` — master-detail filter panel · `CitySwitcher` — header city popover
 - `AddTrainerForm` — 4-step add wizard · `MatchAlertForm` — 3-step alert wizard · `RecommendForm` — rec on profile
 - `TrainerCard`, `RecommendationList` — display · `AdminLogin` + `admin/*` panels
@@ -56,6 +56,8 @@
 
 ## Other
 - `data/seed.ts` — taxonomy + 44 areas (city-tagged) + local-only sample trainers
+- `public/fmt-dark.json` — custom OFM dark style: POI dots+names, navy water,
+  brighter labels (generated from OFM dark; layers `poi_dot`, `poi_label_*`)
 - `migrations/` — D1 SQL (remote); local equivalent lives in db.ts `migrate()`
-- `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (11 files)
+- `tests/` — vitest, isolated temp DB via `FMT_DB_PATH` (14 files)
 - `wrangler.toml` — Workers config: D1/KV bindings, observability, vars

@@ -61,7 +61,16 @@ export default async function TrainerPage({
             </div>
             <p className="mt-1 text-slate-400">
               {trainer.area_name} ·{" "}
-              {trainer.activities.map((a) => `${a.icon} ${a.name}`).join(" · ")}
+              {trainer.activities.map((a) => `${a.icon} ${a.name}`).join(" · ")}{" "}
+              ·{" "}
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${trainer.lat},${trainer.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-300 hover:text-pink-200"
+              >
+                Directions ↗
+              </a>
             </p>
           </div>
           <div className="text-right">

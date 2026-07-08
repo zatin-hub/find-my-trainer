@@ -389,6 +389,23 @@ export default function HomeClient({
                         {m.replace("_", " ")}
                       </span>
                     ))}
+                    {/* Card is one big <Link>; a nested <a> is invalid HTML. */}
+                    <button
+                      type="button"
+                      className="chip ml-auto cursor-pointer hover:border-pink-400/50 hover:text-pink-200"
+                      title="Open directions in Google Maps"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(
+                          `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`,
+                          "_blank",
+                          "noopener,noreferrer"
+                        );
+                      }}
+                    >
+                      Directions ↗
+                    </button>
                   </div>
                   {t.languages.length > 0 && (
                     <div className="mt-2 text-xs text-slate-500">

@@ -6,8 +6,10 @@ import fs from "node:fs";
 const DB = path.join(os.tmpdir(), `fmt-set-${process.pid}-${Date.now()}.db`);
 process.env.FMT_DB_PATH = DB;
 
-const { getSetting, setSetting } = await import("@/lib/settings");
-const { resolveMapStyle, OPENFREEMAP_STYLE } = await import("@/lib/mapstyle");
+const { getSetting, setSetting, getSettings } = await import("@/lib/settings");
+const { resolveMapStyle, OPENFREEMAP_STYLE, HYBRID_STYLES } = await import(
+  "@/lib/mapstyle"
+);
 
 afterAll(() => {
   for (const suffix of ["", "-wal", "-shm"]) {
@@ -29,6 +31,14 @@ describe("settings store", () => {
     await setSetting("map_provider", "hybrid");
     expect(await getSetting("map_provider")).toBe("hybrid");
   });
+  it("batch-reads keys in one call, null for unset", async () => {
+    await setSetting("map_style", "fmt-dark");
+    const s = await getSettings(["map_provider", "map_style", "missing"]);
+    expect(s.map_provider).toBe("hybrid");
+    expect(s.map_style).toBe("fmt-dark");
+    expect(s.missing).toBeNull();
+    expect(await getSettings([])).toEqual({});
+  });
 });
 
 describe("resolveMapStyle", () => {
@@ -47,5 +57,24 @@ describe("resolveMapStyle", () => {
   });
   it("ignores unknown provider values", () => {
     expect(resolveMapStyle("google", "k").provider).toBe("hybrid");
+  });
+  it("resolves hybrid base styles from the allowlist", () => {
+    expect(resolveMapStyle(null, undefined, "fmt-dark").styleUrl).toBe(
+      "/fmt-dark.json"
+    );
+    expect(resolveMapStyle(null, undefined, "fiord").styleUrl).toBe(
+      HYBRID_STYLES.fiord
+    );
+  });
+  it("falls back to default style on unknown values", () => {
+    expect(resolveMapStyle(null, undefined, "neon").styleUrl).toBe(
+      OPENFREEMAP_STYLE
+    );
+    expect(resolveMapStyle(null, undefined, null).styleUrl).toBe(
+      OPENFREEMAP_STYLE
+    );
+  });
+  it("keeps hybridStyle through an ola selection (for the admin picker)", () => {
+    expect(resolveMapStyle("ola", "k", "fiord").hybridStyle).toBe("fiord");
   });
 });

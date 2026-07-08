@@ -3,12 +3,25 @@
 import type { UsageDay } from "@/lib/usage";
 import { useModerate } from "@/components/admin/shared";
 
+// Keep in sync with HYBRID_STYLES in lib/mapstyle.ts (not imported — that
+// module is server-side; this is just the picker's display list).
+const STYLE_OPTIONS = [
+  ["dark", "Dark (stock)", "current default — grayscale dark, no POI labels"],
+  ["fmt-dark", "FMT dark (custom)", "POI names + dots, navy water, brighter street labels"],
+  ["fiord", "Fiord", "dark navy-blue tone"],
+  ["liberty", "Liberty", "full-color classic (light)"],
+  ["bright", "Bright", "full-color, denser (light)"],
+  ["positron", "Positron", "light gray minimal"],
+] as const;
+
 export default function MapPanel({
   mapProvider,
+  mapStyle,
   olaConfigured,
   usage,
 }: {
   mapProvider: "hybrid" | "ola";
+  mapStyle: string;
   olaConfigured: boolean;
   usage: UsageDay[];
 }) {
@@ -51,6 +64,35 @@ export default function MapPanel({
         Applies on next page load for all visitors. Switch back anytime; changes
         are audit-logged.
       </p>
+
+      <div className="mt-6">
+        <h3 className="mb-2 text-sm font-semibold text-slate-300">
+          Base style{mapProvider === "ola" ? " (hybrid only — inactive while All Ola)" : ""}
+        </h3>
+        <div className="grid gap-2 rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm sm:grid-cols-2">
+          {STYLE_OPTIONS.map(([value, label, hint]) => (
+            <label key={value} className="flex items-start gap-2">
+              <input
+                type="radio"
+                name="map_style"
+                checked={mapStyle === value}
+                disabled={busy || mapProvider === "ola"}
+                onChange={async () => {
+                  const json = await act("set_map_style", 0, { value });
+                  if (json?.error) window.alert(String(json.error));
+                }}
+                className="mt-0.5 accent-pink-500"
+              />
+              <span>
+                <span className={mapStyle === value ? "text-pink-200" : "text-slate-300"}>
+                  {label}
+                </span>
+                <span className="block text-xs text-slate-500">{hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-6">
         <h3 className="mb-2 text-sm font-semibold text-slate-300">

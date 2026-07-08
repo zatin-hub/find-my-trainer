@@ -37,6 +37,15 @@ export default function TrainerCard({ trainer: t }: { trainer: Trainer }) {
             {m.replace("_", " ")}
           </span>
         ))}
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="chip ml-auto hover:border-pink-400/50 hover:text-pink-200"
+          title="Open directions in Google Maps"
+        >
+          Directions ↗
+        </a>
       </div>
     </li>
   );

@@ -9,6 +9,7 @@ export default async function AdminMapPage() {
   return (
     <MapPanel
       mapProvider={mapConfig.provider}
+      mapStyle={mapConfig.hybridStyle}
       olaConfigured={!!process.env.OLA_MAPS_API_KEY}
       usage={usage}
     />
